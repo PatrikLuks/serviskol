@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { sendEvent } from '../App';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -21,6 +23,7 @@ export default function LoginScreen({ navigation }) {
       }
       if (!res.ok) throw new Error(data.msg || 'Chyba přihlášení');
       // Uložit token a přejít na dashboard
+      sendEvent('login', { method: 'standard' });
       navigation.replace('Dashboard');
     } catch (err) {
       setError(err.message);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, FlatList, StyleSheet } from 'react-native';
+import { sendEvent } from '../App';
 
 export default function RewardsScreen() {
   const [rewards, setRewards] = useState([]);
@@ -23,7 +24,10 @@ export default function RewardsScreen() {
       body: JSON.stringify({ rewardId })
     });
     const data = await res.json();
-    if (res.ok) setStatus('Odměna přidělena!');
+    if (res.ok) {
+      setStatus('Odměna přidělena!');
+      sendEvent('reward_claimed', { rewardId });
+    }
     else setStatus(data.msg || 'Chyba při nárokování odměny.');
   };
 

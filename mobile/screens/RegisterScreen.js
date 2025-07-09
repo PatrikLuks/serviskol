@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { sendEvent } from '../App';
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -19,6 +20,7 @@ export default function RegisterScreen({ navigation }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.msg || 'Chyba registrace');
       setSuccess('Registrace úspěšná!');
+      sendEvent('register', { method: 'standard' });
       setTimeout(() => navigation.replace('Login'), 1500);
     } catch (err) {
       setError(err.message);
