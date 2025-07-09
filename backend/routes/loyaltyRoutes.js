@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const LoyaltyPoints = require('../models/LoyaltyPoints');
 const { createNotification } = require('../utils/notificationUtils');
 const { sendPushNotification } = require('../utils/pushUtils');
+const { LeaderboardEntry } = require('../models/Gamification');
 
 // Pomocná funkce pro výpočet úrovně a odznaků
 function getLevel(points) {
@@ -55,6 +56,12 @@ router.post('/add', auth, async (req, res) => {
     });
     // Push notifikace
     await sendPushNotification(req.user.id, 'Věrnostní body', `Získali jste ${amount} bodů! (${reason})`);
+    // Přidělit body za věrnostní akci
+    await LeaderboardEntry.findOneAndUpdate(
+      { user: req.user.id },
+      { $inc: { points: 2 }, $set: { lastUpdate: new Date() } },
+      { upsert: true, new: true }
+    );
     res.json(points);
   } catch (err) {
     res.status(500).json({ msg: 'Chyba serveru.' });

@@ -1,0 +1,27 @@
+name: Mobilní aplikace ServisKol
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nastavit Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalace závislostí
+        run: |
+          cd mobile
+          npm install
+      - name: Build aplikace
+        run: |
+          cd mobile
+          npm run build
+      - name: Spustit testy
+        run: |
+          cd mobile
+          npm test

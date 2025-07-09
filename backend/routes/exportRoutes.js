@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const { auditLog, checkExportAlerts } = require('../middleware/auditLog');
 const Bike = require('../models/Bike');
 const ServiceRequest = require('../models/ServiceRequest');
 
@@ -14,6 +15,8 @@ router.get('/service-history', auth, async (req, res) => {
         csv += `${bike.brand} ${bike.model},${s.type},${s.description || ''},${s.status},${s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ''}\n`;
       });
     });
+    auditLog('Export dat', req.user);
+    await checkExportAlerts(req.user);
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=servisni-historie.csv');
     res.send(csv);

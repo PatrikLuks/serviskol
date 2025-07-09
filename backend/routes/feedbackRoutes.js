@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const { LeaderboardEntry } = require('../models/Gamification');
 
 // POST /api/feedback
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { message, email } = req.body;
   if (!message) {
     return res.status(400).json({ error: 'Zpětná vazba je povinná.' });
@@ -20,8 +21,20 @@ router.post('/', (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Chyba při ukládání zpětné vazby.' });
     }
-    res.json({ success: true });
   });
+
+  try {
+    // Přidělit body za feedback
+    await LeaderboardEntry.findOneAndUpdate(
+      { user: req.user.id },
+      { $inc: { points: 5 }, $set: { lastUpdate: new Date() } },
+      { upsert: true, new: true }
+    );
+  } catch (err) {
+    return res.status(500).json({ error: 'Chyba při přidělování bodů.' });
+  }
+
+  res.json({ success: true });
 });
 
 module.exports = router;

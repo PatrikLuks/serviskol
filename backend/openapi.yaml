@@ -1,0 +1,111 @@
+openapi: 3.0.0
+info:
+  title: ServisKol API
+  version: 1.0.0
+description: |
+  OpenAPI specifikace pro mobilní a webové klienty ServisKol.
+servers:
+  - url: http://localhost:5000/api
+paths:
+  /users/register:
+    post:
+      summary: Registrace uživatele
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+      responses:
+        '201':
+          description: Registrace úspěšná
+  /users/login:
+    post:
+      summary: Přihlášení uživatele
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Přihlášení úspěšné
+  /users/2fa/setup:
+    post:
+      summary: Vygeneruje 2FA secret a QR
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: QR a secret
+  /users/2fa/verify:
+    post:
+      summary: Ověření 2FA kódu
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: 2FA aktivováno
+  /bikes:
+    get:
+      summary: Seznam kol uživatele
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /gamification/rewards:
+    get:
+      summary: Seznam odměn
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+  /gamification/claim:
+    post:
+      summary: Nárokování odměny
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rewardId:
+                  type: string
+      responses:
+        '200':
+          description: Odměna přidělena
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

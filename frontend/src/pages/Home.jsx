@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import LoyaltyWidget from '../components/LoyaltyWidget';
+import Leaderboard from '../components/Leaderboard';
+import Rewards from '../components/Rewards';
 import { Button } from '@mui/material';
 
 export default function Home() {
@@ -48,6 +50,8 @@ export default function Home() {
         </div>
       )}
       <LoyaltyWidget />
+      <Leaderboard />
+      <Rewards />
     </div>
   );
 }

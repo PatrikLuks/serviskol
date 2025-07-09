@@ -73,6 +73,27 @@ app.use('/api/audit', auditRoutes);
 const auditLogViewRoutes = require('./routes/auditLogViewRoutes');
 app.use('/api/audit', auditLogViewRoutes);
 
+const gdprRoutes = require('./routes/gdprRoutes');
+app.use('/api/gdpr', gdprRoutes);
+
+const gdprAdminRoutes = require('./routes/gdprAdminRoutes');
+app.use('/api/gdpr', gdprAdminRoutes);
+
+const twofaRoutes = require('./routes/twofaRoutes');
+app.use('/api/2fa', twofaRoutes);
+
+const healthRoutes = require('./routes/healthRoutes');
+app.use('/api/health', healthRoutes);
+
+const gamificationRoutes = require('./routes/gamificationRoutes');
+app.use('/api/gamification', gamificationRoutes);
+
+const stravaRoutes = require('./routes/stravaRoutes');
+app.use('/api/integrations', stravaRoutes);
+
+const paymentRoutes = require('./routes/paymentRoutes');
+app.use('/api/payments', paymentRoutes);
+
 app.use(Sentry.Handlers.errorHandler());
 
 const errorHandler = require('./middleware/errorHandler');

@@ -19,6 +19,7 @@ import FeedbackForm from './components/FeedbackForm';
 import NotificationWidget from './components/NotificationWidget';
 import ProfileSettings from './pages/ProfileSettings';
 import AuditLog from './pages/AuditLog';
+import GdprRequests from './pages/GdprRequests';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -99,6 +100,7 @@ function App() {
         <Route path="/notifications" element={<NotificationWidget />} />
         <Route path="/profile/settings" element={<ProfileSettings />} />
         <Route path="/admin/audit-log" element={<AuditLog />} />
+        <Route path="/admin/gdpr-requests" element={<GdprRequests />} />
       </Routes>
     </Router>
   );

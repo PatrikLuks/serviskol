@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema({
   bikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bike' }],
   createdAt: { type: Date, default: Date.now },
   pushToken: { type: String }, // FCM nebo OneSignal token
-  notificationChannel: { type: String, enum: ['in-app', 'email', 'push'], default: 'in-app' }
+  notificationChannel: { type: String, enum: ['in-app', 'email', 'push'], default: 'in-app' },
+  twoFactorSecret: { type: String }, // base32
+  twoFactorEnabled: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('User', userSchema);

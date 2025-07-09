@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import AnalyticsFilters from '../components/AnalyticsFilters';
+import PaymentDemo from '../components/PaymentDemo';
 const auditLog = require('../middleware/auditLog');
 
 export default function AdminDashboard() {
@@ -174,6 +175,7 @@ export default function AdminDashboard() {
               <div className="mt-2"><b>Retence (unikátní uživatelé/týden):</b> {userMetrics.retention.join(', ')}</div>
             </div>
           )}
+          {user?.role === 'admin' && <PaymentDemo />}
         </>
       )}
     </div>

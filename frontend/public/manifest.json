@@ -1,0 +1,22 @@
+{
+  "short_name": "ServisKol",
+  "name": "ServisKol – správa servisu kol",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#e6f4ea",
+  "theme_color": "#22c55e",
+  "orientation": "portrait-primary",
+  "description": "Moderní aplikace pro správu servisu kol, gamifikace, notifikace, analytika."
+}
