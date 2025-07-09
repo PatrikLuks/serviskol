@@ -8,7 +8,9 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['client', 'mechanic'], required: true },
   loyaltyLevel: { type: String, enum: ['Bronze', 'Silver', 'Gold', 'Platinum'], default: 'Bronze' },
   bikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bike' }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  pushToken: { type: String }, // FCM nebo OneSignal token
+  notificationChannel: { type: String, enum: ['in-app', 'email', 'push'], default: 'in-app' }
 });
 
 module.exports = mongoose.model('User', userSchema);
