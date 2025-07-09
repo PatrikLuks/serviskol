@@ -1,0 +1,52 @@
+# copilot-instructions
+
+## Kontext projektu
+Aplikace pro správu servisu kol pro klienty i servisní techniky. Cílem je profesionální, jednoduché, hravé a uživatelsky komfortní řešení s AI asistencí, věrnostním programem a integracemi (Strava, počasí, cloud storage). Vzhled aplikace musí být v zelených odstínech, zaměřený na přehlednost, jednoduchost a gamifikaci.
+
+## Designové požadavky
+- Hlavní barva: zelená (svěží, profesionální, důvěryhodná)
+- Styl: jednoduchý, přehledný, s hravými prvky (ikonky, animace, gamifikace věrnostního programu)
+- UI: maximální jednoduchost, vše na pár kliknutí, přehledné menu, velká tlačítka, intuitivní navigace
+
+## Hlavní sekce a funkce
+- **Příjmový dotazník**: Interaktivní formulář pro zadání typu kola, stáří, stavu, popisu závady, upload fotek. AI asistence pro návrh příčiny, předvyplnění pro stálé klienty.
+- **Poradenství a návody**: Knihovna s foto/video návody, FAQ, možnost dotazu servisákovi nebo AI, doporučení vybavení a oblečení dle počasí.
+- **Servisní kniha**: Digitální servisní kniha pro každé kolo, fotodokumentace, poznámky, účtenky, historie oprav a údržby.
+- **Připomenutí servisu**: Automatické notifikace podle času, kilometrů, jízd nebo opotřebení komponent. Propojení se Strava API.
+- **Věrnostní program a gamifikace**: Body za servis, nákupy, doporučení. Směna bodů za slevy, úrovně věrnosti (Bronz, Stříbro, Zlato, Platina), měsíční výzvy a soutěže.
+- **AI asistent**: Pomoc s dotazníkem, doporučení servisních úkonů, rady k údržbě, personalizované tipy.
+- **Správa kol a dílů**: Evidence více kol, komponent, sklad náhradních dílů, fotky, poznámky, upozornění na doplnění.
+- **Objednání servisu a komunikace**: Online rezervace termínu, výběr technika/dílny, transparentní ceník, chat s technikem, sdílení fotek.
+- **Další funkce**: Počasí a doporučení oblečení, rychlý přístup k návodům, zálohování a synchronizace dat, export historie, možnost Lite verze.
+
+## Databázový model (MongoDB)
+- Users, Bikes, Components, ServiceRequests, LoyaltyPoints, Messages
+- Dodržuj pojmenování a strukturu dle zadání
+
+## Architektura
+- Frontend: React (web), React Native (mobil), TailwindCSS, MUI, Lottie
+- Backend: Node.js + Express/NestJS, REST API/GraphQL, MongoDB
+- Cloud: Cloudinary/AWS S3 (fotky), Firebase/OneSignal (notifikace), OpenAI API, OpenWeatherMap API, Strava API
+
+## MVP (první verze)
+- Webová aplikace (React)
+- Registrace, přihlášení, přidání kola, servisní kniha, rezervace termínu, chat, notifikace
+
+## Roadmapa a rozvoj
+- AI asistence, věrnostní program, gamifikace, mobilní aplikace, integrace Strava/počasí, pokročilé statistiky, export, synchronizace, marketplace
+
+## Vývojová strategie
+- Prioritizuj jednoduchost UI a minimalizuj počet kroků
+- Kód piš modulárně, s důrazem na čitelnost a opakovanou použitelnost
+- Průběžně testuj a validuj s reálnými uživateli
+- Dokumentuj důležité části kódu a API
+- Při nejasnostech preferuj jednoduché a rozšiřitelné řešení
+- Dodržuj sjednocenou terminologii a varianty stavů (např. ANO/NE, typy servisu)
+
+## Ostatní
+- Dodržuj best practices pro bezpečnost, autentizaci a správu dat
+- Pravidelné zálohy, monitoring, onboarding pro nové vývojáře
+- Monetizace: SaaS model, freemium/premium, marketplace, affiliate
+
+---
+Tento soubor shrnuje zadání a strategii z textových souborů projektu včetně prompt.txt. Slouží jako základní vodítko pro vývojáře a Copilot. Pokud je potřeba, vždy se vrať k .txt souborům pro detailní inspiraci nebo upřesnění.
