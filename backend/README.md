@@ -50,9 +50,75 @@
 3. Doporučujeme použít reverse proxy (Nginx) a HTTPS.
 4. Pro monitoring/logování využijte Sentry, Papertrail, nebo MongoDB Atlas monitoring.
 
+## Nasazení pomocí Docker Compose
+
+1. Ujistěte se, že máte nainstalovaný Docker a Docker Compose.
+2. V kořenovém adresáři spusťte:
+   ```bash
+   docker-compose up --build
+   ```
+3. Backend poběží na http://localhost:5000, frontend na http://localhost:5173.
+4. MongoDB poběží na portu 27017 a data budou uložena v persistentním svazku.
+
+## Health-check endpoint
+
+Pro monitoring backendu použijte endpoint:
+```
+GET /api/health
+```
+Vrací JSON se stavem aplikace a databáze.
+
 ## Audit logování
 - Klíčové akce (změna stavu servisu, přiřazení technika, export dat) jsou logovány do `logs/audit.log`.
 - Pro pokročilou analýzu lze logy ukládat i do MongoDB.
+
+## Zálohování MongoDB
+
+Pro manuální zálohu spusťte:
+```bash
+bash scripts/backup_mongo.sh
+```
+Zálohy se ukládají do složky `backups` s časovým razítkem.
+
+Pro automatizaci nastavte cron job nebo použijte obdobný plánovač.
+
+## Disaster recovery
+
+### Zálohování
+- Pro manuální zálohu spusťte: `./scripts/backup_mongo.sh`
+- Zálohy se ukládají do složky `backups/`
+
+### Obnova zálohy
+- Pro obnovu spusťte: `./scripts/restore_mongo.sh <soubor_zalohy>`
+- Podporuje .gz archiv i adresářovou zálohu
+- Příklad: `./scripts/restore_mongo.sh backups/serviskol-2025-07-10.gz`
+
+### Troubleshooting
+- Ověřte, že běží MongoDB na localhost:27017
+- Problémy s právy: spusťte skript s `sudo` nebo upravte práva k souborům
+- Pro detailní logy použijte přepínač `-v` u mongorestore
+
+## Monitoring a alerting
+
+### Základní monitoring backendu
+- Skript `./scripts/monitor_health.sh` kontroluje dostupnost endpointu `/api/health/health`
+- V případě chyby odešle e-mail (nutné mít nastavený příkaz `mail` a správně nastavený SMTP server na serveru)
+- Nastavte svůj e-mail v proměnné `EMAIL_TO` ve skriptu
+- Pro pravidelné spouštění přidejte do crontabu např. každých 5 minut:
+  ```
+  */5 * * * * /cesta/k/projektu/backend/scripts/monitor_health.sh >> /cesta/k/projektu/backend/logs/monitor.log 2>&1
+  ```
+- Pro pokročilý monitoring lze využít UptimeRobot, Prometheus, Grafana nebo Sentry
+
+## Nejčastější chyby a jejich řešení
+
+- **MongoDB neběží**: Ověřte, že je spuštěn proces `mongod` na `localhost:27017`.
+- **Port obsazen**: Změňte proměnnou `PORT` v `.env` nebo uvolněte port (např. 5000/3001).
+- **CORS chyba**: Ověřte, že backend povoluje požadavky z domény frontendu (nastavení CORS v serveru).
+- **Chybí .env**: Zkopírujte `.env.example` nebo vytvořte `.env` dle README.
+- **Test leaks (A worker process has failed to exit gracefully...)**: Ujistěte se, že v serveru nejsou běžící intervaly nebo neukončené asynchronní operace během testů.
+- **Chyba připojení k databázi**: Zkontrolujte správnost `MONGODB_URI` v `.env` a dostupnost MongoDB.
+- **Chyba při obnově zálohy**: Ověřte práva k souborům a že je správně nainstalován `mongorestore`.
 
 ---
 

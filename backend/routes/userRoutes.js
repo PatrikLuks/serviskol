@@ -21,6 +21,16 @@ router.get('/mechanics', auth, async (req, res) => {
     res.status(500).json({ msg: 'Chyba serveru.' });
   }
 });
+// Vrátí aktuálně přihlášeného uživatele
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('_id name email role');
+    if (!user) return res.status(404).json({ msg: 'Uživatel nenalezen.' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ msg: 'Chyba serveru.' });
+  }
+});
 // Admin: změna role uživatele
 router.post('/change-role', auth, userController.changeUserRole);
 // Po úspěšném dokončení onboardingu přidělit body

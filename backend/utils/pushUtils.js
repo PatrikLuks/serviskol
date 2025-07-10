@@ -4,11 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 // Inicializace FCM (použijte svůj serviceAccountKey.json)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH)),
-  });
-}
+// if (!admin.apps.length) {
+//   admin.initializeApp({
+//     credential: admin.credential.cert(require(process.env.FIREBASE_SERVICE_ACCOUNT_PATH)),
+//   });
+// }
 
 async function sendPushNotification(userId, title, body) {
   const user = await User.findById(userId);

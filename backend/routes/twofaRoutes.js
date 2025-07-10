@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
-const auditLog = require('../middleware/auditLog');
+const { auditLog } = require('../middleware/auditLog');
 
 // POST /api/2fa/setup - vygeneruje secret a QR pro aktivaci
 router.post('/setup', auth, async (req, res) => {

@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const auditLog = require('../middleware/auditLog');
+const { auditLog } = require('../middleware/auditLog');
 
 exports.register = async (req, res) => {
   try {
@@ -21,6 +21,10 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      console.error('Chybí email nebo heslo:', req.body);
+      return res.status(400).json({ msg: 'Chybí email nebo heslo.' });
+    }
     const user = await User.findOne({ email });
     if (!user) {
       auditLog('Neúspěšné přihlášení', { email }, { ip: req.ip });
@@ -39,6 +43,7 @@ exports.login = async (req, res) => {
     auditLog('Přihlášení', user, { ip: req.ip });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, twoFactorEnabled: user.twoFactorEnabled } });
   } catch (err) {
+    console.error('Chyba při loginu:', err, req.body);
     res.status(500).json({ msg: 'Chyba serveru.' });
   }
 };
@@ -73,6 +78,7 @@ exports.login2FA = async (req, res) => {
 exports.changeUserRole = async (req, res) => {
   try {
     const { userId, newRole } = req.body;
+    if (req.user.role !== 'admin') return res.status(403).json({ msg: 'Pouze admin může měnit role.' });
     if (!['client', 'mechanic', 'admin'].includes(newRole)) return res.status(400).json({ msg: 'Neplatná role.' });
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ msg: 'Uživatel nenalezen.' });

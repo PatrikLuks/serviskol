@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const Sentry = require('@sentry/node');
 
 const app = express();
@@ -18,7 +18,7 @@ Sentry.init({
 });
 
 // Middleware
-app.use(Sentry.Handlers.requestHandler());
+// app.use(Sentry.Handlers.requestHandler());
 app.use(helmet());
 app.use(cors());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: 'Příliš mnoho požadavků, zkuste to později.' }));
@@ -94,10 +94,14 @@ app.use('/api/integrations', stravaRoutes);
 const paymentRoutes = require('./routes/paymentRoutes');
 app.use('/api/payments', paymentRoutes);
 
-app.use(Sentry.Handlers.errorHandler());
+// app.use(Sentry.Handlers.errorHandler());
 
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
+console.log('Před app.listen');
 app.listen(PORT, () => console.log(`Server běží na portu ${PORT}`));
+console.log('Za app.listen');
+
+module.exports = app;
