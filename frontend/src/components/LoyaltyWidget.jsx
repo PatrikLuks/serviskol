@@ -25,7 +25,9 @@ export default function LoyaltyWidget() {
           setPoints(data.points);
           setHistory(data.history || []);
         }
-      } catch {}
+      } catch {
+        // ignorováno
+      }
       setLoading(false);
     };
     fetchPoints();
@@ -43,7 +45,9 @@ export default function LoyaltyWidget() {
           setLevel(data.level);
           setBadges(data.badges || []);
         }
-      } catch {}
+      } catch {
+        // ignorováno
+      }
     };
     fetchGamification();
   }, [points]);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
+import ReactGA from 'react-ga4';
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'client' });
@@ -19,6 +20,12 @@ export default function Register() {
       setError('Vyplňte všechna pole.');
       return;
     }
+    // Přidána validace emailu na frontend
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(form.email)) {
+      setError('Zadejte platný email.');
+      return;
+    }
     if (form.password.length < 6) {
       setError('Heslo musí mít alespoň 6 znaků.');
       return;
@@ -34,6 +41,9 @@ export default function Register() {
       if (!res.ok) throw new Error(data.msg || (data.errors && data.errors[0]?.msg) || 'Chyba registrace');
       setSuccess('Registrace úspěšná. Můžete se přihlásit.');
       setForm({ name: '', email: '', password: '', role: 'client' });
+      if (localStorage.getItem('analyticsOptOut') !== 'true') {
+        ReactGA.event({ category: 'user', action: 'register', label: 'standard' });
+      }
     } catch (err) {
       setError(err.message);
     } finally {

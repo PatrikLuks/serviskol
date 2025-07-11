@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import AnalyticsFilters from '../components/AnalyticsFilters';
 import PaymentDemo from '../components/PaymentDemo';
-const auditLog = require('../middleware/auditLog');
 
 export default function AdminDashboard() {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [filteredStats, setFilteredStats] = useState(null);
   const [error, setError] = useState('');
@@ -42,7 +41,7 @@ export default function AdminDashboard() {
   }, [user]);
 
   const handleFilter = async (params) => {
-    const query = Object.entries(params).filter(([_, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+    const query = Object.entries(params).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
     const token = localStorage.getItem('token');
     const res = await fetch(`/api/analytics/filtered?${query}`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -92,7 +91,7 @@ export default function AdminDashboard() {
 
   function handleExportPDFWithFilters() {
     const params = { from: filteredStats?.from, to: filteredStats?.to, type: filteredStats?.type, mechanic: filteredStats?.mechanic };
-    const query = Object.entries(params).filter(([_, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+    const query = Object.entries(params).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
     const token = localStorage.getItem('token');
     fetch(`/api/analytics/export-pdf?${query}`, {
       headers: { 'Authorization': `Bearer ${token}` }

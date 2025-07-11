@@ -20,6 +20,9 @@ import NotificationWidget from './components/NotificationWidget';
 import ProfileSettings from './pages/ProfileSettings';
 import AuditLog from './pages/AuditLog';
 import GdprRequests from './pages/GdprRequests';
+import ReactGA from 'react-ga4';
+
+ReactGA.initialize('G-XXXXXXXXXX'); // TODO: nahraďte vlastním GA4 měřicím ID
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -42,6 +45,10 @@ function Navbar() {
 
 function App() {
   const [count, setCount] = useState(0)
+
+  React.useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: window.location.pathname + window.location.search });
+  }, []);
 
   return (
     <Router>

@@ -7,18 +7,23 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config({ path: __dirname + '/.env' });
 const Sentry = require('@sentry/node');
+const promClient = require('prom-client');
+const collectDefaultMetrics = promClient.collectDefaultMetrics;
 
 const app = express();
+collectDefaultMetrics();
 
-// Sentry konfigurace
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  tracesSampleRate: 1.0,
-  environment: process.env.NODE_ENV || 'development',
-});
+// Sentry konfigurace (volitelné, pouze pokud je nastaven SENTRY_DSN)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    environment: process.env.NODE_ENV || 'development',
+  });
+  app.use(Sentry.Handlers.requestHandler());
+}
 
 // Middleware
-// app.use(Sentry.Handlers.requestHandler());
 app.use(helmet());
 app.use(cors());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: 'Příliš mnoho požadavků, zkuste to později.' }));
@@ -95,9 +100,17 @@ const paymentRoutes = require('./routes/paymentRoutes');
 app.use('/api/payments', paymentRoutes);
 
 // app.use(Sentry.Handlers.errorHandler());
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', promClient.register.contentType);
+  res.end(await promClient.register.metrics());
+});
 
 const PORT = process.env.PORT || 5000;
 console.log('Před app.listen');

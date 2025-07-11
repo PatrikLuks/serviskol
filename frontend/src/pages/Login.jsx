@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
+import ReactGA from 'react-ga4';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -25,7 +28,7 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      const res = await fetch('/api/users/login', {
+      const res = await fetch(`${API_URL}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -38,6 +41,9 @@ export default function Login() {
       if (!res.ok) throw new Error(data.msg || (data.errors && data.errors[0]?.msg) || 'Chyba přihlášení');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      if (localStorage.getItem('analyticsOptOut') !== 'true') {
+        ReactGA.event({ category: 'user', action: 'login', label: 'standard' });
+      }
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -51,7 +57,7 @@ export default function Login() {
     setTwoFAError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/2fa/verify-login', {
+      const res = await fetch(`${API_URL}/api/2fa/verify-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, token: twoFACode }),

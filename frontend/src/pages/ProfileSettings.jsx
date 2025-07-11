@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { registerPushToken } from '../utils/push';
 import StravaConnect from '../components/StravaConnect';
 
 const ProfileSettings = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [channel, setChannel] = useState(user?.notificationChannel || 'in-app');
   const [status, setStatus] = useState('');
   const [twoFA, setTwoFA] = useState({ enabled: user?.twoFactorEnabled || false, qr: '', secret: '', step: 'idle', code: '', error: '', success: '' });
+  const [analyticsOptOut, setAnalyticsOptOut] = useState(localStorage.getItem('analyticsOptOut') === 'true');
 
   useEffect(() => {
     setChannel(user?.notificationChannel || 'in-app');
@@ -109,6 +110,13 @@ const ProfileSettings = () => {
     }
   };
 
+  const handleAnalyticsOptOut = (e) => {
+    const checked = e.target.checked;
+    setAnalyticsOptOut(checked);
+    localStorage.setItem('analyticsOptOut', checked);
+    window.location.reload(); // reload pro aplikaci změny
+  };
+
   useEffect(() => {
     fetch2FAStatus();
   }, [user]);
@@ -161,6 +169,16 @@ const ProfileSettings = () => {
 
       <h2 className="text-lg font-bold mb-2 mt-4">Propojení účtů</h2>
       <StravaConnect />
+
+      <div className="mt-8">
+        <label>
+          <input type="checkbox" checked={analyticsOptOut} onChange={handleAnalyticsOptOut} />
+          Neposílat anonymizovaná analytická data (opt-out)
+        </label>
+        <div className="text-xs text-gray-400 mt-2">
+          Pro zlepšování aplikace využíváme anonymizovanou analytiku. Můžete ji zde kdykoliv vypnout.
+        </div>
+      </div>
     </div>
   );
 };

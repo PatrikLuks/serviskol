@@ -18,7 +18,7 @@ const FeedbackForm = () => {
       toast.success('Děkujeme za zpětnou vazbu!');
       setMessage('');
       setEmail('');
-    } catch (err) {
+    } catch {
       toast.error('Odeslání selhalo. Zkuste to prosím znovu.');
     }
     setLoading(false);

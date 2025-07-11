@@ -38,6 +38,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
+      <h1 className="text-4xl font-bold mb-2">ServisKol</h1>
       <h2 className="text-3xl font-bold mb-4">Domovská stránka</h2>
       <p>Vítejte v aplikaci Serviskol!</p>
       <Button variant="outlined" color="primary" className="mb-4" onClick={handleExport}>

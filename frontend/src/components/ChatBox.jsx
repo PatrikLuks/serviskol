@@ -17,7 +17,9 @@ export default function ChatBox({ bikeId, user }) {
         });
         const data = await res.json();
         if (res.ok) setMessages(data);
-      } catch {}
+      } catch {
+        // ignorováno
+      }
     };
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000); // polling každých 5s

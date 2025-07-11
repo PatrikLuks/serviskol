@@ -1,0 +1,9 @@
+# Codecov upload step for backend coverage
+- name: Upload coverage to Codecov
+  uses: codecov/codecov-action@v4
+  with:
+    files: ./backend/coverage/lcov.info
+    flags: backend
+    name: backend-coverage
+    fail_ci_if_error: false
+    token: ${{ secrets.CODECOV_TOKEN }}

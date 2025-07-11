@@ -13,7 +13,7 @@ export default function Leaderboard() {
     <div className="max-w-lg mx-auto p-4 bg-white rounded shadow mt-8">
       <h2 className="text-xl font-bold mb-4">Žebříček uživatelů</h2>
       <ol className="list-decimal pl-6">
-        {data.map((entry, i) => (
+        {data.map((entry) => (
           <li key={entry.user._id} className="mb-2">
             <span className="font-semibold">{entry.user.name}</span> – {entry.points} bodů
           </li>

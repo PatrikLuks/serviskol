@@ -4,28 +4,36 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd backend && npm test",
+    "dev": "concurrently \"cd backend && npm start\" \"cd frontend && npm run dev\"",
+    "build": "cd frontend && npm run build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@sentry/node": "^9.36.0",
     "@sentry/react": "^9.36.0",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
+    "expo-device": "^7.1.4",
+    "expo-notifications": "^0.31.4",
     "express-rate-limit": "^7.5.1",
+    "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
     "helmet": "^8.1.0",
     "multer": "^2.0.1",
     "nodemailer": "^7.0.5",
     "pdfkit": "^0.17.1",
     "qrcode": "^1.5.4",
+    "react-ga4": "^2.1.0",
     "react-toastify": "^11.0.5",
     "speakeasy": "^2.0.0"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "jest": "^30.0.4",
     "supertest": "^7.1.3"
   }

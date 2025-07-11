@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const GdprRequests = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,7 +18,7 @@ const GdprRequests = () => {
         });
         const data = await res.json();
         setRequests(data);
-      } catch (err) {
+      } catch {
         setError('Chyba načítání žádostí.');
       }
       setLoading(false);
