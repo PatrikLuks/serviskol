@@ -15,7 +15,7 @@
     "supertest": "^6.0.0"
   },
   "dependencies": {
-    "@sentry/node": "^9.36.0",
+    "@sentry/node": "^9.38.0",
     "@swc/helpers": "^0.5.17",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
