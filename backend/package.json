@@ -28,7 +28,7 @@
     "fontkit": "^2.0.4",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.16.2",
+    "mongoose": "^8.16.3",
     "multer": "^2.0.1",
     "nodemailer": "^7.0.5",
     "pdfkit": "^0.17.1",
