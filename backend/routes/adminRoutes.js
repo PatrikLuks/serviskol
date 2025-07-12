@@ -1,3 +1,33 @@
+// --- SPRÁVA ADMINŮ A ROLÍ ---
+const User = require('../models/User');
+const AuditLog = require('../models/AuditLog');
+// GET /api/admin/admins - výpis všech adminů a jejich rolí (pouze superadmin)
+router.get('/admins', adminOnly, adminRole('superadmin'), async (req, res) => {
+  const admins = await User.find({ role: 'admin' }).select('_id name email adminRole createdAt lastLogin').lean();
+  res.json(admins);
+});
+
+// PATCH /api/admin/admins/:id/role - změna role admina (pouze superadmin, audit log)
+router.patch('/admins/:id/role', adminOnly, adminRole('superadmin'), async (req, res) => {
+  const { adminRole } = req.body;
+  if (!['superadmin','approver','readonly'].includes(adminRole)) {
+    return res.status(400).json({ error: 'Neplatná role.' });
+  }
+  const user = await User.findById(req.params.id);
+  if (!user || user.role !== 'admin') return res.status(404).json({ error: 'Admin nenalezen.' });
+  const prevRole = user.adminRole;
+  user.adminRole = adminRole;
+  await user.save();
+  // Audit log
+  await AuditLog.create({
+    action: 'Změna role admina',
+    performedBy: req.user._id,
+    targetUser: user._id,
+    details: { prevRole, newRole: adminRole },
+    createdAt: new Date()
+  });
+  res.json({ result: 'ok', adminId: user._id, prevRole, newRole: adminRole });
+});
 // GET /api/admin/me - info o přihlášeném adminovi
 router.get('/me', adminOnly, async (req, res) => {
   const User = require('../models/User');

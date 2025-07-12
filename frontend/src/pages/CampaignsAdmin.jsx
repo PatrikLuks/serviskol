@@ -5,6 +5,7 @@ import AdminRoleBadge from '../components/AdminRoleBadge';
 import DecisionTreeChannel from '../components/DecisionTreeChannel';
 import ChannelDropRecommendations from '../components/ChannelDropRecommendations';
 import SegmentHeatmapAnalytics from '../components/SegmentHeatmapAnalytics';
+import AdminRoleManagerSection from '../components/AdminRoleManagerSection';
 
 const CampaignsAdmin = () => {
   // ...existing state and effect hooks...
@@ -16,7 +17,7 @@ const CampaignsAdmin = () => {
         <h1 className="text-2xl font-bold">Admin dashboard</h1>
         <AdminRoleBadge />
       </div>
-
+      <AdminRoleManagerSection />
       {/* Rozložení doporučených kanálů podle DecisionTree */}
       <section>
         <h2 className="text-2xl font-bold mb-4 mt-10">Rozložení doporučených kanálů (DecisionTree)</h2>
