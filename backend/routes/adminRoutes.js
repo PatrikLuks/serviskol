@@ -1,3 +1,4 @@
+const SecurityAlert = require('../models/SecurityAlert');
 // --- AUDIT LOG: výpis a export ---
 // GET /api/admin/audit-log?since=YYYY-MM-DD&action=...&admin=...&format=csv
 router.get('/audit-log', adminOnly, adminRole('superadmin'), async (req, res) => {
@@ -54,7 +55,21 @@ router.patch('/admins/:id/role', adminOnly, adminRole('superadmin'), async (req,
     details: { prevRole, newRole: adminRole },
     createdAt: new Date()
   });
+  // Security alert
+  await SecurityAlert.create({
+    type: 'role-change',
+    message: `Role admina ${user.name} (${user.email}) změněna z ${prevRole} na ${adminRole} superadminem ${req.user.name} (${req.user.email})`,
+    user: user._id,
+    performedBy: req.user._id,
+    details: { prevRole, newRole: adminRole },
+    createdAt: new Date()
+  });
   res.json({ result: 'ok', adminId: user._id, prevRole, newRole: adminRole });
+});
+// GET /api/admin/security-alerts - výpis alertů (pouze admin)
+router.get('/security-alerts', adminOnly, async (req, res) => {
+  const alerts = await SecurityAlert.find({}).sort({ createdAt: -1 }).limit(100).populate('user', 'name email').populate('performedBy', 'name email').lean();
+  res.json(alerts);
 });
 // GET /api/admin/me - info o přihlášeném adminovi
 router.get('/me', adminOnly, async (req, res) => {
