@@ -1,3 +1,31 @@
+// --- AUDIT LOG: výpis a export ---
+// GET /api/admin/audit-log?since=YYYY-MM-DD&action=...&admin=...&format=csv
+router.get('/audit-log', adminOnly, adminRole('superadmin'), async (req, res) => {
+  const { since, action, admin, format } = req.query;
+  const q = {};
+  if (since) q.createdAt = { $gte: new Date(since) };
+  if (action) q.action = action;
+  if (admin) q.performedBy = admin;
+  const logs = await AuditLog.find(q).populate('performedBy', 'name email').populate('targetUser', 'name email').sort({ createdAt: -1 }).lean();
+  if (format === 'csv') {
+    const { Parser } = require('json2csv');
+    const fields = [
+      { label: 'Akce', value: 'action' },
+      { label: 'Kdo', value: row => row.performedBy?.name || '' },
+      { label: 'E-mail', value: row => row.performedBy?.email || '' },
+      { label: 'Cílový uživatel', value: row => row.targetUser?.name || '' },
+      { label: 'Cílový e-mail', value: row => row.targetUser?.email || '' },
+      { label: 'Detaily', value: row => JSON.stringify(row.details) },
+      { label: 'Čas', value: row => row.createdAt ? new Date(row.createdAt).toLocaleString() : '' }
+    ];
+    const parser = new Parser({ fields });
+    const csv = parser.parse(logs);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('audit-log.csv');
+    return res.send(csv);
+  }
+  res.json(logs);
+});
 // --- SPRÁVA ADMINŮ A ROLÍ ---
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
