@@ -153,7 +153,7 @@ router.get('/user-metrics', auth, async (req, res) => {
     // Načti audit logy
     const fs = require('fs');
     const path = require('path');
-    const logPath = path.join(__dirname, '../logs/audit.log');
+    const logPath = '/tmp/audit.log';
     if (!fs.existsSync(logPath)) return res.json({ activity: [], retention: [], conversions: 0, topActions: [] });
     const lines = fs.readFileSync(logPath, 'utf-8').split('\n').filter(Boolean);
     const logs = lines.map(line => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);

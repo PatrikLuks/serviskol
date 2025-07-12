@@ -10,12 +10,15 @@ import BikeDetail from './pages/BikeDetail';
 import Onboarding from './pages/Onboarding';
 import Help from './pages/Help';
 import AdminDashboard from './pages/AdminDashboard';
+import CampaignsAdmin from './pages/CampaignsAdmin';
+import CampaignsReport from './pages/CampaignsReport';
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { useAuth } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import FeedbackForm from './components/FeedbackForm';
+import AIChat from './components/AIChat';
 import NotificationWidget from './components/NotificationWidget';
 import ProfileSettings from './pages/ProfileSettings';
 import AuditLog from './pages/AuditLog';
@@ -35,6 +38,8 @@ function Navbar() {
     <nav className="flex gap-4 p-4 bg-primary-dark text-white items-center">
       <Link to="/" className="hover:underline">Domů</Link>
       {user && <Link to="/bikes" className="hover:underline">Moje kola</Link>}
+      {user && <Link to="/admin/campaigns" className="hover:underline">Kampaně</Link>}
+      {user && <Link to="/admin/campaigns-report" className="hover:underline">Přehled kampaní</Link>}
       {!user && <Link to="/login" className="hover:underline">Přihlášení</Link>}
       {!user && <Link to="/register" className="hover:underline">Registrace</Link>}
       {user && <span className="ml-4">Přihlášen: <b>{user.name}</b></span>}
@@ -103,11 +108,18 @@ function App() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/help" element={<Help />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/campaigns" element={<CampaignsAdmin />} />
+        <Route path="/admin/campaigns-report" element={<CampaignsReport />} />
         <Route path="/feedback" element={<FeedbackForm />} />
         <Route path="/notifications" element={<NotificationWidget />} />
         <Route path="/profile/settings" element={<ProfileSettings />} />
         <Route path="/admin/audit-log" element={<AuditLog />} />
         <Route path="/admin/gdpr-requests" element={<GdprRequests />} />
+        <Route path="/ai-chat" element={
+          <PrivateRoute>
+            <AIChat />
+          </PrivateRoute>
+        } />
       </Routes>
     </Router>
   );

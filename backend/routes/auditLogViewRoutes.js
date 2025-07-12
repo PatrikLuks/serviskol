@@ -7,7 +7,7 @@ const auth = require('../middleware/auth');
 // GET /api/audit/logs - pouze pro adminy
 router.get('/logs', auth, (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ msg: 'Pouze pro admina.' });
-  const logPath = path.join(__dirname, '../logs/audit.log');
+  const logPath = '/tmp/audit.log';
   if (!fs.existsSync(logPath)) return res.json([]);
   const lines = fs.readFileSync(logPath, 'utf-8').split('\n').filter(Boolean);
   const logs = lines.map(line => {

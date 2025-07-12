@@ -7,7 +7,7 @@ jest.mock('../utils/notificationUtils', () => ({
   alertAdmins: jest.fn().mockResolvedValue(undefined)
 }));
 
-const logPath = path.join(__dirname, '../logs/audit.log');
+const logPath = '/tmp/audit.log';
 
 describe('AuditLog export alerts', () => {
   beforeEach(() => {

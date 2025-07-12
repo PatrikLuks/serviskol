@@ -1,3 +1,9 @@
+const clickRoutes = require('./routes/clickRoutes');
+app.use('/api/click', clickRoutes);
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/api/admin', adminRoutes);
+const followupMetricsRoutes = require('./routes/followupMetrics');
+app.use('/api/admin', followupMetricsRoutes);
 // Základní Express server pro Serviskol
 const express = require('express');
 const connectDB = require('./config/db');
@@ -88,6 +94,12 @@ const twofaRoutes = require('./routes/twofaRoutes');
 app.use('/api/2fa', twofaRoutes);
 
 const healthRoutes = require('./routes/healthRoutes');
+const supportRoutes = require('./routes/supportRoutes');
+app.use('/api/support', supportRoutes);
+
+// AI chat, historie, hodnocení
+const aiRoutes = require('./routes/aiRoutes');
+app.use('/api/ai', aiRoutes);
 app.use('/api/health', healthRoutes);
 
 const gamificationRoutes = require('./routes/gamificationRoutes');

@@ -5,6 +5,7 @@ import ReactGA from 'react-ga4';
 export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'client' });
   const [error, setError] = useState('');
+  const [errorList, setErrorList] = useState([]);
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -50,43 +51,47 @@ export default function Register() {
       setLoading(false);
     }
   };
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h2 className="text-2xl font-bold mb-4">Registrace</h2>
-      <form className="flex flex-col gap-4 w-full max-w-xs" onSubmit={handleSubmit}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">Registrace</h2>
         <input
-          className="p-2 rounded border"
           type="text"
           name="name"
           placeholder="Jméno"
           value={form.name}
           onChange={handleChange}
+          className="w-full p-2 mb-4 border rounded"
         />
         <input
-          className="p-2 rounded border"
           type="email"
           name="email"
           placeholder="Email"
           value={form.email}
           onChange={handleChange}
+          className="w-full p-2 mb-4 border rounded"
         />
         <input
-          className="p-2 rounded border"
           type="password"
           name="password"
           placeholder="Heslo"
           value={form.password}
           onChange={handleChange}
+          className="w-full p-2 mb-4 border rounded"
         />
-        <select name="role" value={form.role} onChange={handleChange} className="p-2 rounded border">
+        <select name="role" value={form.role} onChange={handleChange} className="p-2 rounded border w-full mb-4">
           <option value="client">Klient</option>
           <option value="mechanic">Servisní technik</option>
         </select>
-        <Button type="submit" variant="contained" color="success" disabled={loading}>
+        <Button type="submit" variant="contained" color="success" disabled={loading} fullWidth>
           {loading ? 'Registruji...' : 'Registrovat'}
         </Button>
-        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+        {error && <div className="text-red-500 text-sm mb-2 mt-2">{error}</div>}
+        {errorList.length > 0 && (
+          <ul className="text-red-500 text-xs mb-2 list-disc list-inside">
+            {errorList.map((err, i) => <li key={i}>{err}</li>)}
+          </ul>
+        )}
         {success && <div className="text-green-600 text-sm mt-2">{success}</div>}
       </form>
     </div>

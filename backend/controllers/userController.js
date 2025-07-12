@@ -8,8 +8,7 @@ exports.register = async (req, res) => {
     const { name, email, password, role } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ msg: 'Uživatel již existuje.' });
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, passwordHash, role });
+    const user = new User({ name, email, passwordHash: password, role });
     await user.save();
     res.status(201).json({ msg: 'Registrace úspěšná.' });
   } catch (err) {
@@ -34,6 +33,10 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       auditLog('Neúspěšné přihlášení', user, { ip: req.ip });
       return res.status(400).json({ msg: 'Nesprávný email nebo heslo.' });
+    }
+    // Povinné 2FA pro adminy a techniky
+    if ((user.role === 'admin' || user.role === 'mechanic') && !user.twoFactorEnabled) {
+      return res.status(403).json({ msg: 'Pro tuto roli je povinné dvoufázové ověření. Aktivujte si 2FA.' });
     }
     if (user.twoFactorEnabled) {
       // 2FA je aktivní, vyžadujeme další krok

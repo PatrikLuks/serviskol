@@ -1,7 +1,10 @@
+
 const request = require('supertest');
 const app = require('../server');
 const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
+const mongoose = require('mongoose');
+const User = require('../models/User');
 
 // Mock alertAdmins (vedlejší efekt) pro všechny testy
 jest.mock('../utils/notificationUtils', () => ({
@@ -15,6 +18,9 @@ jest.mock('../middleware/auditLog', () => ({
 }));
 
 describe('User API', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+  });
   it('should return 400 for missing registration fields', async () => {
     const res = await request(app)
       .post('/api/users/register')
@@ -79,7 +85,7 @@ describe('User API', () => {
 
   describe('User role change', () => {
     let adminToken, userId;
-    beforeAll(async () => {
+    beforeEach(async () => {
       // Vyčistit kolekci uživatelů před testy role
       await require('../models/User').deleteMany({});
       // Registrace admina
@@ -208,7 +214,7 @@ describe('User API', () => {
 
   describe('2FA flow', () => {
     let token, secret, email = '2fauser@example.com', password = 'Test2fa123';
-    beforeAll(async () => {
+    beforeEach(async () => {
       await require('../models/User').deleteMany({ email });
       await request(app)
         .post('/api/users/register')
@@ -217,6 +223,7 @@ describe('User API', () => {
         .post('/api/users/login')
         .send({ email, password });
       token = loginRes.body.token;
+      secret = undefined;
     });
 
     it('should setup and activate 2FA', async () => {
@@ -239,6 +246,15 @@ describe('User API', () => {
     });
 
     it('should fail 2FA verification with wrong code', async () => {
+      // Nejprve setup 2FA
+      const setupRes = await request(app)
+        .post('/api/2fa/setup')
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+      expect(setupRes.statusCode).toBe(200);
+      expect(setupRes.body.secret).toBeDefined();
+      secret = setupRes.body.secret;
+      // Ověření špatného kódu
       const wrongCode = '123456';
       const res = await request(app)
         .post('/api/2fa/verify')
@@ -249,6 +265,22 @@ describe('User API', () => {
     });
 
     it('should require 2FA on login and allow login via /2fa/verify-login', async () => {
+      // Nejprve setup 2FA
+      const setupRes = await request(app)
+        .post('/api/2fa/setup')
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+      expect(setupRes.statusCode).toBe(200);
+      expect(setupRes.body.secret).toBeDefined();
+      secret = setupRes.body.secret;
+      // Aktivace 2FA
+      const code = speakeasy.totp({ secret, encoding: 'base32' });
+      const verifyRes = await request(app)
+        .post('/api/2fa/verify')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ token: code });
+      expect(verifyRes.statusCode).toBe(200);
+      expect(verifyRes.body.success).toBe(true);
       // Login, očekáváme twoFactorRequired
       const loginRes = await request(app)
         .post('/api/users/login')
@@ -256,7 +288,6 @@ describe('User API', () => {
       expect(loginRes.statusCode).toBe(401);
       expect(loginRes.body.twoFactorRequired).toBe(true);
       // Ověření přes /2fa/verify-login
-      const code = speakeasy.totp({ secret, encoding: 'base32' });
       const verifyLoginRes = await request(app)
         .post('/api/users/2fa/verify-login')
         .send({ email, password, token: code });
@@ -265,11 +296,28 @@ describe('User API', () => {
     });
 
     it('should disable 2FA', async () => {
-      // Login pro získání tokenu
+      // Nejprve setup 2FA
+      const setupRes = await request(app)
+        .post('/api/2fa/setup')
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+      expect(setupRes.statusCode).toBe(200);
+      expect(setupRes.body.secret).toBeDefined();
+      secret = setupRes.body.secret;
+      // Aktivace 2FA
+      const code = speakeasy.totp({ secret, encoding: 'base32' });
+      const verifyRes = await request(app)
+        .post('/api/2fa/verify')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ token: code });
+      expect(verifyRes.statusCode).toBe(200);
+      expect(verifyRes.body.success).toBe(true);
+      // Login přes 2FA
       const loginRes = await request(app)
         .post('/api/users/login')
         .send({ email, password });
-      const code = speakeasy.totp({ secret, encoding: 'base32' });
+      expect(loginRes.statusCode).toBe(401);
+      expect(loginRes.body.twoFactorRequired).toBe(true);
       const verifyLoginRes = await request(app)
         .post('/api/users/2fa/verify-login')
         .send({ email, password, token: code });

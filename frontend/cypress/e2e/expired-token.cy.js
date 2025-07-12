@@ -7,7 +7,7 @@ describe('Expirovaný JWT token', () => {
       'dummySignature'; // exp: 2020-12-26
     window.localStorage.setItem('token', expiredToken);
     window.localStorage.setItem('user', JSON.stringify({ id: '123', name: 'Test', email: 'test@test.cz', role: 'client' }));
-    cy.visit('http://localhost:5173/');
+    cy.visit('/');
     // Očekáváme, že aplikace uživatele odhlásí a přesměruje na login nebo zobrazí hlášku
     cy.url().should('include', '/login');
     cy.contains('Přihlášení').should('exist');

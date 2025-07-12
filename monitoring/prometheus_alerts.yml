@@ -1,0 +1,20 @@
+groups:
+- name: servis-backend-alerts
+  rules:
+  - alert: BackendDown
+    expr: up{job="serviskol-backend"} == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Backend není dostupný"
+      description: "Backend instance je nedostupná déle než 2 minuty."
+
+  - alert: BackendHighErrorRate
+    expr: rate(http_requests_total{job="serviskol-backend",status=~"5.."}[5m]) > 0.05
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Vysoký počet chyb 5xx na backendu"
+      description: "Více než 5 % požadavků na backend končí chybou 5xx."

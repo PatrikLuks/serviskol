@@ -23,7 +23,7 @@ async function alertAdmins({ subject, text, type = 'alert' }) {
     // Log (do audit.log)
     const fs = require('fs');
     const path = require('path');
-    const logPath = path.join(__dirname, '../logs/audit.log');
+    const logPath = '/tmp/audit.log';
     fs.appendFileSync(logPath, JSON.stringify({ timestamp: new Date(), action: `ALERT: ${subject}`, detail: text, admin: admin.email }) + '\n');
   }
 }

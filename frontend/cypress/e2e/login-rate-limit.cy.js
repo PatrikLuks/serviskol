@@ -1,6 +1,6 @@
 describe('Rate limiting login', () => {
   it('Zamítne login po překročení limitu pokusů', () => {
-    cy.visit('http://localhost:5173/login');
+    cy.visit('/login');
     for (let i = 0; i < 6; i++) {
       cy.get('input[name="email"]').clear().type('pluks120@gmail.com');
       cy.get('input[name="password"]').clear().type('spatneheslo');

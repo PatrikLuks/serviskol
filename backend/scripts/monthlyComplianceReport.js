@@ -9,7 +9,7 @@ const User = require('../models/User');
   const now = new Date();
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
-  const logPath = path.join(__dirname, '../logs/audit.log');
+  const logPath = '/tmp/audit.log';
   if (!fs.existsSync(logPath)) return;
   const lines = fs.readFileSync(logPath, 'utf-8').split('\n').filter(Boolean);
   // Filtrovat záznamy za aktuální měsíc

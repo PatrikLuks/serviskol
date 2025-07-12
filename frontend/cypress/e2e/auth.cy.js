@@ -1,6 +1,6 @@
 describe('Registrace a přihlášení', () => {
   it('Uživatel se může zaregistrovat a přihlásit', () => {
-    cy.visit('http://localhost:5173/register');
+    cy.visit('/register');
     cy.get('input[name="name"]').type('Testovací Uživatel');
     cy.get('input[name="email"]').type('test' + Date.now() + '@test.cz');
     cy.get('input[name="password"]').type('Test1234!');
@@ -14,7 +14,7 @@ describe('Registrace a přihlášení', () => {
   });
 
   it('Přihlášení selže při špatném hesle', () => {
-    cy.visit('http://localhost:5173/login');
+    cy.visit('/login');
     cy.get('input[name="email"]').type('pluks120@gmail.com');
     cy.get('input[name="password"]').type('spatneheslo');
     cy.get('button[type="submit"]').click();
@@ -22,7 +22,7 @@ describe('Registrace a přihlášení', () => {
   });
 
   it('Přihlášení selže při neexistujícím emailu', () => {
-    cy.visit('http://localhost:5173/login');
+    cy.visit('/login');
     cy.get('input[name="email"]').type('neexistuje' + Date.now() + '@test.cz');
     cy.get('input[name="password"]').type('Test1234!');
     cy.get('button[type="submit"]').click();
@@ -30,7 +30,7 @@ describe('Registrace a přihlášení', () => {
   });
 
   it('Přihlášení selže při prázdných polích', () => {
-    cy.visit('http://localhost:5173/login');
+    cy.visit('/login');
     cy.get('button[type="submit"]').click();
     cy.contains('Vyplňte všechna pole.').should('exist');
   });

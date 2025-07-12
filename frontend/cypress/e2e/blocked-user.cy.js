@@ -7,7 +7,7 @@ describe('Blokovaný uživatel', () => {
       'dummySignature'; // platný token
     window.localStorage.setItem('token', validToken);
     window.localStorage.setItem('user', JSON.stringify({ id: '123', name: 'Blokovaný', email: 'blocked@test.cz', role: 'blocked' }));
-    cy.visit('http://localhost:5173/');
+    cy.visit('/');
     // Očekáváme, že aplikace uživatele odhlásí a přesměruje na login nebo zobrazí hlášku
     cy.url().should('include', '/login');
     cy.contains('Přihlášení').should('exist');

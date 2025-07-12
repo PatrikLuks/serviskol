@@ -13,7 +13,7 @@ router.get('/requests', auth, async (req, res) => {
   // Pro jednoduchost: audit logy s akcí GDPR žádost o výmaz
   const fs = require('fs');
   const path = require('path');
-  const logPath = path.join(__dirname, '../logs/audit.log');
+  const logPath = '/tmp/audit.log';
   if (!fs.existsSync(logPath)) return res.json([]);
   const lines = fs.readFileSync(logPath, 'utf-8').split('\n').filter(Boolean);
   const requests = lines.map(line => { try { return JSON.parse(line); } catch { return null; } })

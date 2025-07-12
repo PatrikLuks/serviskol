@@ -3,7 +3,7 @@ const path = require('path');
 const { alertAdmins } = require('../utils/notificationUtils');
 
 function auditLog(action, user, details = {}) {
-  const logPath = path.join(__dirname, '../logs/audit.log');
+  const logPath = '/tmp/audit.log';
   const entry = {
     timestamp: new Date().toISOString(),
     userId: user?.id || user?._id || null,
@@ -18,7 +18,7 @@ function auditLog(action, user, details = {}) {
 async function checkExportAlerts(user) {
   const fs = require('fs');
   const path = require('path');
-  const logPath = path.join(__dirname, '../logs/audit.log');
+  const logPath = '/tmp/audit.log';
   if (!fs.existsSync(logPath)) return;
   const lines = fs.readFileSync(logPath, 'utf-8').split('\n').filter(Boolean);
   const today = new Date().toISOString().slice(0, 10);
