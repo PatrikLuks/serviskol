@@ -140,7 +140,7 @@ export default function AlertApprovalPanel() {
                 <button className="px-2 py-1 bg-red-600 text-white rounded text-xs" onClick={() => handleReject(alert)}>Zamítnout</button>
               </>
             )}
-            {/* AI feedback tlačítka */}
+            {/* AI feedback tlačítka + komentář a relevance */}
             <span className="ml-4 text-xs text-gray-500">AI feedback:</span>
             <button className={`px-2 py-1 rounded text-xs ${alert.aiFeedback==='excellent'?'bg-green-200':'bg-gray-100'}`} onClick={async()=>{
               await axios.patch(`/api/admin/alert-logs/${alert._id}/ai-feedback`,{feedback:'excellent'}); setActionResult('AI feedback uložen.');
@@ -154,6 +154,18 @@ export default function AlertApprovalPanel() {
             <button className={`px-2 py-1 rounded text-xs ${alert.aiFeedback==='irrelevant'?'bg-yellow-200':'bg-gray-100'}`} onClick={async()=>{
               await axios.patch(`/api/admin/alert-logs/${alert._id}/ai-feedback`,{feedback:'irrelevant'}); setActionResult('AI feedback uložen.');
             }}>Mimo</button>
+            <select className="ml-2 text-xs border rounded" value={alert.aiFeedbackRelevance||''} onChange={async e=>{
+              await axios.patch(`/api/admin/alert-logs/${alert._id}/ai-feedback`,{feedback:alert.aiFeedback||'neutral',relevanceType:e.target.value}); setActionResult('Relevance uložena.');
+            }}>
+              <option value="">Relevance</option>
+              <option value="relevant">Relevantní</option>
+              <option value="irrelevant">Irelevantní</option>
+            </select>
+            <input className="ml-2 text-xs border rounded px-1" style={{width:120}} placeholder="Komentář" defaultValue={alert.aiFeedbackComment||''} onBlur={async e=>{
+              if(e.target.value!==alert.aiFeedbackComment){
+                await axios.patch(`/api/admin/alert-logs/${alert._id}/ai-feedback`,{feedback:alert.aiFeedback||'neutral',comment:e.target.value}); setActionResult('Komentář uložen.');
+              }
+            }} />
           </div>
         </div>
       ))}

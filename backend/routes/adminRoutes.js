@@ -107,20 +107,26 @@ router.get('/alert-logs/ai-feedback-stats', adminOnly, async (req, res) => {
   res.json({ feedbackCounts, approvalCounts, bySegment });
 });
 // PATCH /api/admin/alert-logs/:id/ai-feedback
+// PATCH /api/admin/alert-logs/:id/ai-feedback (rozšířeno o komentář a relevanceType)
 router.patch('/alert-logs/:id/ai-feedback', adminOnly, async (req, res) => {
   const userId = req.user?._id;
   const AlertLog = require('../models/AlertLog');
-  const { feedback } = req.body;
+  const { feedback, comment, relevanceType } = req.body;
   if (!['excellent','good','neutral','bad','irrelevant'].includes(feedback)) {
     return res.status(400).json({ error: 'Neplatná hodnota feedbacku.' });
+  }
+  if (relevanceType && !['relevant','irrelevant'].includes(relevanceType)) {
+    return res.status(400).json({ error: 'Neplatný typ relevance.' });
   }
   const log = await AlertLog.findOne({ _id: req.params.id, admin: userId });
   if (!log) return res.status(404).json({ error: 'Alert nenalezen.' });
   log.aiFeedback = feedback;
+  if (comment) log.aiFeedbackComment = comment;
+  if (relevanceType) log.aiFeedbackRelevance = relevanceType;
   log.audit = log.audit || [];
-  log.audit.push({ event: 'ai-feedback', value: feedback, at: new Date(), by: userId });
+  log.audit.push({ event: 'ai-feedback', value: feedback, comment, relevanceType, at: new Date(), by: userId });
   await log.save();
-  res.json({ result: 'ok', aiFeedback: log.aiFeedback });
+  res.json({ result: 'ok', aiFeedback: log.aiFeedback, comment: log.aiFeedbackComment, relevanceType: log.aiFeedbackRelevance });
 });
 // GET /api/admin/alert-logs/report
 router.get('/alert-logs/report', adminOnly, async (req, res) => {
