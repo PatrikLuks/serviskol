@@ -8,6 +8,7 @@ import SegmentHeatmapAnalytics from '../components/SegmentHeatmapAnalytics';
 import AdminRoleManagerSection from '../components/AdminRoleManagerSection';
 import AuditLogPanel from '../components/AuditLogPanel';
 import SecurityAlertsPanel from '../components/SecurityAlertsPanel';
+import AIFeedbackExportPanel from '../components/AIFeedbackExportPanel';
 
 const CampaignsAdmin = () => {
   // ...existing state and effect hooks...
@@ -22,6 +23,7 @@ const CampaignsAdmin = () => {
       <SecurityAlertsPanel />
       <AdminRoleManagerSection />
       <AuditLogPanel />
+      <AIFeedbackExportPanel />
       {/* Rozložení doporučených kanálů podle DecisionTree */}
       <section>
         <h2 className="text-2xl font-bold mb-4 mt-10">Rozložení doporučených kanálů (DecisionTree)</h2>

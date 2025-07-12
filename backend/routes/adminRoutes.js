@@ -1,3 +1,33 @@
+// --- AI FEEDBACK EXPORT ---
+// GET /api/admin/ai-feedback-export?since=YYYY-MM-DD&segment=...&feedback=...&relevance=...&format=csv
+router.get('/ai-feedback-export', adminOnly, adminRole('superadmin'), async (req, res) => {
+  const { since, segment, feedback, relevance, format } = req.query;
+  const q = { aiFeedback: { $exists: true } };
+  if (since) q.createdAt = { $gte: new Date(since) };
+  if (feedback) q.aiFeedback = feedback;
+  if (relevance) q.aiFeedbackRelevance = relevance;
+  if (segment) q['segment'] = { $regex: segment, $options: 'i' };
+  const AlertLog = require('../models/AlertLog');
+  const logs = await AlertLog.find(q).sort({ createdAt: -1 }).lean();
+  if (format === 'csv') {
+    const { Parser } = require('json2csv');
+    const fields = [
+      { label: 'Segment', value: row => JSON.stringify(row.segment) },
+      { label: 'AI návrh', value: row => row.proposedAction?.message || '' },
+      { label: 'AI feedback', value: 'aiFeedback' },
+      { label: 'Relevance', value: 'aiFeedbackRelevance' },
+      { label: 'Komentář', value: 'aiFeedbackComment' },
+      { label: 'Schváleno', value: 'approvalStatus' },
+      { label: 'Čas', value: row => row.createdAt ? new Date(row.createdAt).toLocaleString() : '' }
+    ];
+    const parser = new Parser({ fields });
+    const csv = parser.parse(logs);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('ai-feedback.csv');
+    return res.send(csv);
+  }
+  res.json(logs);
+});
 const SecurityAlert = require('../models/SecurityAlert');
 // --- AUDIT LOG: výpis a export ---
 // GET /api/admin/audit-log?since=YYYY-MM-DD&action=...&admin=...&format=csv
