@@ -1,3 +1,46 @@
+const TimeLog = require('../models/TimeLog');
+// --- TIME LOGS: evidence odpracovaných hodin ---
+// POST /api/admin/time-logs (přidání záznamu)
+router.post('/time-logs', adminOnly, async (req, res) => {
+  const { date, hours, note, activityType } = req.body;
+  if (!date || !hours) return res.status(400).json({ error: 'Chybí datum nebo počet hodin.' });
+  const log = await TimeLog.create({
+    user: req.user._id,
+    date: new Date(date),
+    hours,
+    note,
+    activityType: activityType || 'development',
+    createdAt: new Date()
+  });
+  res.json(log);
+});
+
+// GET /api/admin/time-logs (výpis, filtrování, export)
+router.get('/time-logs', adminOnly, async (req, res) => {
+  const { since, user, activityType, format } = req.query;
+  const q = {};
+  if (since) q.date = { $gte: new Date(since) };
+  if (user) q.user = user;
+  if (activityType) q.activityType = activityType;
+  const logs = await TimeLog.find(q).populate('user', 'name email').sort({ date: -1 }).lean();
+  if (format === 'csv') {
+    const { Parser } = require('json2csv');
+    const fields = [
+      { label: 'Datum', value: row => row.date ? new Date(row.date).toLocaleDateString() : '' },
+      { label: 'Hodin', value: 'hours' },
+      { label: 'Uživatel', value: row => row.user?.name || '' },
+      { label: 'E-mail', value: row => row.user?.email || '' },
+      { label: 'Typ aktivity', value: 'activityType' },
+      { label: 'Poznámka', value: 'note' }
+    ];
+    const parser = new Parser({ fields });
+    const csv = parser.parse(logs);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('timelogs.csv');
+    return res.send(csv);
+  }
+  res.json(logs);
+});
 // --- AI FEEDBACK EXPORT ---
 // GET /api/admin/ai-feedback-export?since=YYYY-MM-DD&segment=...&feedback=...&relevance=...&format=csv
 router.get('/ai-feedback-export', adminOnly, adminRole('superadmin'), async (req, res) => {

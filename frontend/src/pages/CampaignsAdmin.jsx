@@ -9,6 +9,7 @@ import AdminRoleManagerSection from '../components/AdminRoleManagerSection';
 import AuditLogPanel from '../components/AuditLogPanel';
 import SecurityAlertsPanel from '../components/SecurityAlertsPanel';
 import AIFeedbackExportPanel from '../components/AIFeedbackExportPanel';
+import TimeLogPanel from '../components/TimeLogPanel';
 
 const CampaignsAdmin = () => {
   // ...existing state and effect hooks...
@@ -20,6 +21,7 @@ const CampaignsAdmin = () => {
         <h1 className="text-2xl font-bold">Admin dashboard</h1>
         <AdminRoleBadge />
       </div>
+      <TimeLogPanel />
       <SecurityAlertsPanel />
       <AdminRoleManagerSection />
       <AuditLogPanel />
