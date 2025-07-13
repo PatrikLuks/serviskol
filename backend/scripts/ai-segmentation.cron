@@ -1,0 +1,2 @@
+// CRON: Spouštět AI segmentaci uživatelů každý den v 2:00
+0 2 * * * cd /Users/patrikluks/Applications/serviskol/backend/scripts && /usr/local/bin/node runAiSegmentation.js >> /Users/patrikluks/Applications/serviskol/backend/logs/ai-segmentation.log 2>&1

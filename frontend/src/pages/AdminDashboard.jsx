@@ -1,7 +1,17 @@
+import BiApiDocsPanel from '../components/BiApiDocsPanel';
+import WebhookManagerPanel from '../components/WebhookManagerPanel';
+import AdminUsersPanel from '../components/AdminUsersPanel';
+import SegmentTransitionHeatmap from '../components/SegmentTransitionHeatmap';
+import FollowupAutomationPanel from '../components/FollowupAutomationPanel';
+import FollowupEffectivenessPanel from '../components/FollowupEffectivenessPanel';
+import FollowupHistoryExportPanel from '../components/FollowupHistoryExportPanel';
+import BiAlertsPanel from '../components/BiAlertsPanel';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AnalyticsFilters from '../components/AnalyticsFilters';
 import PaymentDemo from '../components/PaymentDemo';
+import AdminApiKeyManager from '../components/AdminApiKeyManager';
+import ApiKeyAuditLogPanel from '../components/ApiKeyAuditLogPanel';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -148,6 +158,9 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
+
+          {/* Přehled uživatelů podle AI segmentu */}
+          <AdminUsersPanel />
           <h2 className="text-lg font-semibold mt-6 mb-2">Filtry statistik</h2>
           <AnalyticsFilters onChange={handleFilter} />
           {filteredStats && (
@@ -170,11 +183,26 @@ export default function AdminDashboard() {
                 {userMetrics.activity.map((v, i) => (
                   <div key={i} style={{ height: `${v * 2}px` }} className="w-2 bg-green-500" title={v}></div>
                 ))}
+                <BiApiDocsPanel />
+                <BiAlertsPanel />
               </div>
               <div className="mt-2"><b>Retence (unikátní uživatelé/týden):</b> {userMetrics.retention.join(', ')}</div>
             </div>
           )}
-          {user?.role === 'admin' && <PaymentDemo />}
+          {user?.role === 'admin' && (
+            <>
+              <PaymentDemo />
+              <div className="mt-8">
+                <AdminApiKeyManager />
+                <SegmentTransitionHeatmap />
+                <FollowupEffectivenessPanel />
+                <FollowupHistoryExportPanel />
+                <FollowupAutomationPanel />
+                <ApiKeyAuditLogPanel />
+                <WebhookManagerPanel />
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

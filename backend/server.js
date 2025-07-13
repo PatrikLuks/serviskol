@@ -1,3 +1,30 @@
+const biAlertsRoutes = require('./routes/biAlertsRoutes');
+const biAlertsAiSuggestRoutes = require('./routes/biAlertsAiSuggestRoutes');
+const biAlertsActivateVariantRoutes = require('./routes/biAlertsActivateVariantRoutes');
+const biVariantTrendPredictionRoutes = require('./routes/biVariantTrendPredictionRoutes');
+const biNextBestActionRoutes = require('./routes/biNextBestActionRoutes');
+
+// ...existing code...
+const followupHistoryExport = require('./routes/followupHistoryExport');
+app.use('/api/bi', followupHistoryExport);
+const followupPredictBestVariant = require('./routes/followupPredictBestVariant');
+app.use('/api/bi', followupPredictBestVariant);
+const followupAutomationAiRoutes = require('./routes/followupAutomationAiRoutes');
+app.use('/api/admin/followup-automation', followupAutomationAiRoutes);
+const followupEffectivenessRoutes = require('./routes/followupEffectivenessRoutes');
+app.use('/api/bi', followupEffectivenessRoutes);
+const followupAutomationRoutes = require('./routes/followupAutomationRoutes');
+app.use('/api/admin/followup-automation', followupAutomationRoutes);
+const biDocsRoutes = require('./routes/biDocsRoutes');
+app.use('/api/bi', biDocsRoutes);
+const webhookRoutes = require('./routes/webhookRoutes');
+app.use('/api/admin/webhooks', webhookRoutes);
+const apiKeyRoutes = require('./routes/apiKeyRoutes');
+app.use('/api/admin/api-keys', apiKeyRoutes);
+const biRoutes = require('./routes/biRoutes');
+app.use('/api/bi', biRoutes);
+const reportSettingRoutes = require('./routes/reportSettingRoutes');
+app.use('/api/admin/report-settings', reportSettingRoutes);
 const clickRoutes = require('./routes/clickRoutes');
 app.use('/api/click', clickRoutes);
 const adminRoutes = require('./routes/adminRoutes');
@@ -102,6 +129,11 @@ const aiRoutes = require('./routes/aiRoutes');
 app.use('/api/ai', aiRoutes);
 app.use('/api/health', healthRoutes);
 
+app.use('/api/bi/alerts', biAlertsRoutes);
+app.use('/api/bi/alerts', biAlertsAiSuggestRoutes);
+app.use('/api/bi/alerts', biAlertsActivateVariantRoutes);
+app.use('/api/bi/variant-trend-prediction', biVariantTrendPredictionRoutes);
+app.use('/api/bi/next-best-action', biNextBestActionRoutes);
 const gamificationRoutes = require('./routes/gamificationRoutes');
 app.use('/api/gamification', gamificationRoutes);
 

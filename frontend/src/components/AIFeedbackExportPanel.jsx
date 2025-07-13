@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import QuickFilterBar from './QuickFilterBar';
 
 export default function AIFeedbackExportPanel() {
   const [logs, setLogs] = useState([]);
@@ -9,10 +10,26 @@ export default function AIFeedbackExportPanel() {
   const [feedback, setFeedback] = useState('');
   const [relevance, setRelevance] = useState('');
   const [segment, setSegment] = useState('');
+  const [aiQuery, setAiQuery] = useState('');
+  const [filteredLogs, setFilteredLogs] = useState([]);
 
   useEffect(() => {
     fetchLogs();
   }, []);
+
+  useEffect(() => {
+    if (!aiQuery) {
+      setFilteredLogs(logs);
+    } else {
+      setFilteredLogs(
+        logs.filter(l =>
+          (l.proposedAction?.message && l.proposedAction.message.toLowerCase().includes(aiQuery.toLowerCase())) ||
+          (l.segment && JSON.stringify(l.segment).toLowerCase().includes(aiQuery.toLowerCase())) ||
+          (l.aiFeedbackComment && l.aiFeedbackComment.toLowerCase().includes(aiQuery.toLowerCase()))
+        )
+      );
+    }
+  }, [aiQuery, logs]);
 
   async function fetchLogs() {
     setLoading(true);
@@ -45,6 +62,7 @@ export default function AIFeedbackExportPanel() {
   return (
     <div style={{marginTop:32}}>
       <h3>Export AI feedbacku (pro audit a trénink AI)</h3>
+      <QuickFilterBar query={aiQuery} setQuery={setAiQuery} onSearch={()=>{}} />
       <div style={{marginBottom:8}}>
         <input type="date" value={since} onChange={e=>setSince(e.target.value)} />
         <select value={feedback} onChange={e=>setFeedback(e.target.value)} style={{marginLeft:8}}>
@@ -78,7 +96,7 @@ export default function AIFeedbackExportPanel() {
             </tr>
           </thead>
           <tbody>
-            {logs.map((l,i) => (
+            {filteredLogs.map((l,i) => (
               <tr key={i}>
                 <td><pre style={{fontSize:11,whiteSpace:'pre-wrap'}}>{JSON.stringify(l.segment,null,1)}</pre></td>
                 <td>{l.proposedAction?.message}</td>

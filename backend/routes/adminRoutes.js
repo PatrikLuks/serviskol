@@ -1,45 +1,359 @@
-const TimeLog = require('../models/TimeLog');
-// --- TIME LOGS: evidence odpracovaných hodin ---
-// POST /api/admin/time-logs (přidání záznamu)
-router.post('/time-logs', adminOnly, async (req, res) => {
-  const { date, hours, note, activityType } = req.body;
-  if (!date || !hours) return res.status(400).json({ error: 'Chybí datum nebo počet hodin.' });
-  const log = await TimeLog.create({
-    user: req.user._id,
-    date: new Date(date),
-    hours,
-    note,
-    activityType: activityType || 'development',
-    createdAt: new Date()
-  });
-  res.json(log);
-});
-
-// GET /api/admin/time-logs (výpis, filtrování, export)
-router.get('/time-logs', adminOnly, async (req, res) => {
-  const { since, user, activityType, format } = req.query;
-  const q = {};
-  if (since) q.date = { $gte: new Date(since) };
-  if (user) q.user = user;
-  if (activityType) q.activityType = activityType;
-  const logs = await TimeLog.find(q).populate('user', 'name email').sort({ date: -1 }).lean();
+// --- BI ENDPOINT: Export kampaní ---
+const User = require('../models/User');
+router.get('/bi/campaigns', async (req, res) => {
+  // Autentizace přes API klíč v hlavičce X-API-KEY nebo query parametru
+  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+  if (!apiKey) return res.status(401).json({ error: 'API klíč je vyžadován.' });
+  const user = await User.findOne({ apiKey });
+  if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) return res.status(403).json({ error: 'Neplatný nebo nedostatečný API klíč.' });
+  // Filtrace podle data
+  let { dateFrom, dateTo, format } = req.query;
+  let dateFilter = {};
+  if (dateFrom) dateFilter.$gte = new Date(dateFrom);
+  if (dateTo) dateFilter.$lte = new Date(dateTo);
+  let query = {};
+  if (dateFrom || dateTo) query.createdAt = dateFilter;
+  const campaigns = await Campaign.find(query).lean();
+  // Výstup
   if (format === 'csv') {
     const { Parser } = require('json2csv');
     const fields = [
-      { label: 'Datum', value: row => row.date ? new Date(row.date).toLocaleDateString() : '' },
-      { label: 'Hodin', value: 'hours' },
-      { label: 'Uživatel', value: row => row.user?.name || '' },
-      { label: 'E-mail', value: row => row.user?.email || '' },
-      { label: 'Typ aktivity', value: 'activityType' },
-      { label: 'Poznámka', value: 'note' }
+      { label: 'ID', value: '_id' },
+      { label: 'Téma', value: 'tema' },
+      { label: 'Text', value: 'text' },
+      { label: 'Region', value: 'region' },
+      { label: 'Věk', value: 'age' },
+      { label: 'Počet kliků', value: 'clickCount' },
+      { label: 'Počet odeslání', value: 'sentCount' },
+      { label: 'Vytvořeno', value: row => row.createdAt ? new Date(row.createdAt).toISOString() : '' }
     ];
     const parser = new Parser({ fields });
-    const csv = parser.parse(logs);
+    const csv = parser.parse(campaigns);
     res.header('Content-Type', 'text/csv');
-    res.attachment('timelogs.csv');
+    res.attachment('campaigns.csv');
     return res.send(csv);
   }
-  res.json(logs);
+  // JSON (default)
+  res.json(campaigns);
+});
+// --- DASHBOARD CSV REPORT ---
+const { generateDashboardCsv } = require('../utils/csvReport');
+router.get('/dashboard-report.csv', adminOnly, adminRole('superadmin'), async (req, res) => {
+  let { dateFrom, dateTo } = req.query;
+  let dateFilter = {};
+  if (dateFrom) dateFilter.$gte = new Date(dateFrom);
+  if (dateTo) dateFilter.$lte = new Date(dateTo);
+  let campaignQuery = {};
+  if (dateFrom || dateTo) campaignQuery.createdAt = dateFilter;
+  const campaigns = await Campaign.find(campaignQuery);
+  // Statistika
+  const ctrTrendData = [];
+  const byDate = {};
+  campaigns.forEach(c => {
+    if (!c.createdAt || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+    const date = new Date(c.createdAt).toISOString().slice(0,10);
+    if (!byDate[date]) byDate[date] = { clicks: 0, sent: 0 };
+    byDate[date].clicks += c.clickCount;
+    byDate[date].sent += c.sentCount;
+  });
+  Object.entries(byDate).forEach(([date, v]) => ctrTrendData.push({ date, ctr: v.sent ? v.clicks/v.sent : 0 }));
+  const avgCtr = ctrTrendData.length ? ctrTrendData.reduce((a,b)=>a+b.ctr,0)/ctrTrendData.length : 0;
+  const campaignCount = campaigns.length;
+  // Segmenty
+  const bySeg = {};
+  campaigns.forEach(c => {
+    if (!c.region || !c.age || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+    const region = c.region;
+    const ageGroup = Math.floor(c.age/10)*10;
+    const key = region+'_'+ageGroup;
+    if (!bySeg[key]) bySeg[key] = { region, ageGroup, clicks: 0, sent: 0 };
+    bySeg[key].clicks += c.clickCount;
+    bySeg[key].sent += c.sentCount;
+  });
+  const segmentHeatmapData = Object.values(bySeg).map(v => ({ region: v.region, ageGroup: v.ageGroup, ctr: v.sent ? v.clicks/v.sent : 0 }));
+  const topSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>b.ctr-a.ctr).slice(0,3);
+  // --- Získat enabledSections z ReportSetting ---
+  const ReportSetting = require('../models/ReportSetting');
+  let enabledSections = ['aiSummary','ctrTrend','heatmap'];
+  try {
+    const latestSetting = await ReportSetting.findOne({ enabled: true }).sort({ updatedAt: -1 }).lean();
+    if (latestSetting && Array.isArray(latestSetting.enabledSections)) {
+      enabledSections = latestSetting.enabledSections;
+    }
+  } catch {}
+  // --- AI sumarizace ---
+  let summary = '';
+  if (enabledSections.includes('aiSummary')) {
+    const bottomSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>a.ctr-b.ctr).slice(0,1);
+    const prompt = `Jsi marketingový analytik. Na základě těchto statistik:\n- Průměrné CTR: ${(avgCtr*100).toFixed(2)}%\n- Počet kampaní: ${campaignCount}\n- Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let (CTR ${(topSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\n- Nejslabší segment: ${bottomSegments.length ? `${bottomSegments[0].region}, ${bottomSegments[0].ageGroup} let (CTR ${(bottomSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\nStručně shrň hlavní trendy a doporučení pro růst v nejslabším segmentu. Odpověz česky, max. 3 věty.`;
+    let aiSummary = '';
+    try {
+      const { default: axios } = require('axios');
+      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+      if (OPENAI_API_KEY) {
+        const openaiRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: 'Jsi marketingový analytik.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 120,
+          temperature: 0.6
+        }, {
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        aiSummary = openaiRes.data.choices[0].message.content.trim();
+      }
+    } catch (e) {
+      aiSummary = '';
+    }
+    summary = aiSummary || `Průměrné CTR: ${(avgCtr*100).toFixed(2)}%. Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let` : 'N/A'}.`;
+  }
+  // Vygenerovat CSV
+  const csv = generateDashboardCsv({
+    stats: { avgCtr, campaignCount, topSegments },
+    ctrTrendData: enabledSections.includes('ctrTrend') ? ctrTrendData : [],
+    segmentHeatmapData: enabledSections.includes('heatmap') ? segmentHeatmapData : [],
+    summary: enabledSections.includes('aiSummary') ? summary : undefined
+  });
+  // Audit log
+  try {
+    const AuditLog = require('../models/AuditLog');
+    await AuditLog.create({
+      action: 'export_report_csv',
+      performedBy: req.user._id,
+      details: {
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      }
+    });
+  } catch (e) { /* ignore logging errors */ }
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="dashboard-report.csv"');
+  res.send(csv);
+});
+// --- DASHBOARD XLSX REPORT ---
+// GET /api/admin/dashboard-report.xlsx
+const { generateDashboardXlsx } = require('../utils/xlsxReport');
+router.get('/dashboard-report.xlsx', adminOnly, adminRole('superadmin'), async (req, res) => {
+  let { dateFrom, dateTo } = req.query;
+  let dateFilter = {};
+  if (dateFrom) dateFilter.$gte = new Date(dateFrom);
+  if (dateTo) dateFilter.$lte = new Date(dateTo);
+  let campaignQuery = {};
+  if (dateFrom || dateTo) campaignQuery.createdAt = dateFilter;
+  const campaigns = await Campaign.find(campaignQuery);
+  // Statistika
+  const ctrTrendData = [];
+  const byDate = {};
+  campaigns.forEach(c => {
+    if (!c.createdAt || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+    const date = new Date(c.createdAt).toISOString().slice(0,10);
+    if (!byDate[date]) byDate[date] = { clicks: 0, sent: 0 };
+    byDate[date].clicks += c.clickCount;
+    byDate[date].sent += c.sentCount;
+  });
+  Object.entries(byDate).forEach(([date, v]) => ctrTrendData.push({ date, ctr: v.sent ? v.clicks/v.sent : 0 }));
+  const avgCtr = ctrTrendData.length ? ctrTrendData.reduce((a,b)=>a+b.ctr,0)/ctrTrendData.length : 0;
+  const campaignCount = campaigns.length;
+  // Segmenty
+  const bySeg = {};
+  campaigns.forEach(c => {
+    if (!c.region || !c.age || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+    const region = c.region;
+    const ageGroup = Math.floor(c.age/10)*10;
+    const key = region+'_'+ageGroup;
+    if (!bySeg[key]) bySeg[key] = { region, ageGroup, clicks: 0, sent: 0 };
+    bySeg[key].clicks += c.clickCount;
+    bySeg[key].sent += c.sentCount;
+  });
+  const segmentHeatmapData = Object.values(bySeg).map(v => ({ region: v.region, ageGroup: v.ageGroup, ctr: v.sent ? v.clicks/v.sent : 0 }));
+  const topSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>b.ctr-a.ctr).slice(0,3);
+  // --- Získat enabledSections z ReportSetting ---
+  const ReportSetting = require('../models/ReportSetting');
+  let enabledSections = ['aiSummary','ctrTrend','heatmap'];
+  try {
+    const latestSetting = await ReportSetting.findOne({ enabled: true }).sort({ updatedAt: -1 }).lean();
+    if (latestSetting && Array.isArray(latestSetting.enabledSections)) {
+      enabledSections = latestSetting.enabledSections;
+    }
+  } catch {}
+  // --- AI sumarizace ---
+  let summary = '';
+  if (enabledSections.includes('aiSummary')) {
+    const bottomSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>a.ctr-b.ctr).slice(0,1);
+    const prompt = `Jsi marketingový analytik. Na základě těchto statistik:\n- Průměrné CTR: ${(avgCtr*100).toFixed(2)}%\n- Počet kampaní: ${campaignCount}\n- Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let (CTR ${(topSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\n- Nejslabší segment: ${bottomSegments.length ? `${bottomSegments[0].region}, ${bottomSegments[0].ageGroup} let (CTR ${(bottomSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\nStručně shrň hlavní trendy a doporučení pro růst v nejslabším segmentu. Odpověz česky, max. 3 věty.`;
+    let aiSummary = '';
+    try {
+      const { default: axios } = require('axios');
+      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+      if (OPENAI_API_KEY) {
+        const openaiRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: 'Jsi marketingový analytik.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 120,
+          temperature: 0.6
+        }, {
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        aiSummary = openaiRes.data.choices[0].message.content.trim();
+      }
+    } catch (e) {
+      aiSummary = '';
+    }
+    summary = aiSummary || `Průměrné CTR: ${(avgCtr*100).toFixed(2)}%. Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let` : 'N/A'}.`;
+  }
+  // Vygenerovat XLSX
+  const xlsxBuffer = await generateDashboardXlsx({
+    stats: { avgCtr, campaignCount, topSegments },
+    ctrTrendData: enabledSections.includes('ctrTrend') ? ctrTrendData : [],
+    segmentHeatmapData: enabledSections.includes('heatmap') ? segmentHeatmapData : [],
+    summary: enabledSections.includes('aiSummary') ? summary : undefined
+  });
+  // Audit log
+  try {
+    const AuditLog = require('../models/AuditLog');
+    await AuditLog.create({
+      action: 'export_report_xlsx',
+      performedBy: req.user._id,
+      details: {
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      }
+    });
+  } catch (e) { /* ignore logging errors */ }
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="dashboard-report.xlsx"');
+  res.send(xlsxBuffer);
+});
+// --- DASHBOARD PDF REPORT ---
+// GET /api/admin/dashboard-report.pdf
+const { generateDashboardPdf } = require('../utils/pdfReport');
+const Campaign = require('../models/Campaign');
+const { generateFollowupSummary } = require('../utils/openai');
+const { generateCtrTrendChart } = require('../utils/chartImage');
+const { generateSegmentHeatmap } = require('../utils/chartImageHeatmap');
+router.get('/dashboard-report.pdf', adminOnly, adminRole('superadmin'), async (req, res) => {
+  // Získat časový rozsah z query param (nebo z nastavení)
+  let { dateFrom, dateTo } = req.query;
+  let dateFilter = {};
+  if (dateFrom) dateFilter.$gte = new Date(dateFrom);
+  if (dateTo) dateFilter.$lte = new Date(dateTo);
+  let campaignQuery = {};
+  if (dateFrom || dateTo) campaignQuery.createdAt = dateFilter;
+  // Získat data pro statistiky
+  const campaigns = await Campaign.find(campaignQuery);
+  const ctrTrendData = [];
+  const byDate = {};
+  campaigns.forEach(c => {
+    if (!c.createdAt || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+    const date = new Date(c.createdAt).toISOString().slice(0,10);
+    if (!byDate[date]) byDate[date] = { clicks: 0, sent: 0 };
+    byDate[date].clicks += c.clickCount;
+    byDate[date].sent += c.sentCount;
+  });
+  Object.entries(byDate).forEach(([date, v]) => ctrTrendData.push({ date, ctr: v.sent ? v.clicks/v.sent : 0 }));
+  const avgCtr = ctrTrendData.length ? ctrTrendData.reduce((a,b)=>a+b.ctr,0)/ctrTrendData.length : 0;
+  const campaignCount = campaigns.length;
+  // Segmenty
+  const bySeg = {};
+  campaigns.forEach(c => {
+    if (!c.region || !c.age || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+    const region = c.region;
+    const ageGroup = Math.floor(c.age/10)*10;
+    const key = region+'_'+ageGroup;
+    if (!bySeg[key]) bySeg[key] = { region, ageGroup, clicks: 0, sent: 0 };
+    bySeg[key].clicks += c.clickCount;
+    bySeg[key].sent += c.sentCount;
+  });
+  const segmentHeatmapData = Object.values(bySeg).map(v => ({ region: v.region, ageGroup: v.ageGroup, ctr: v.sent ? v.clicks/v.sent : 0 }));
+  const topSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>b.ctr-a.ctr).slice(0,3);
+
+  // --- Získat enabledSections z ReportSetting ---
+  const ReportSetting = require('../models/ReportSetting');
+  let enabledSections = ['aiSummary','ctrTrend','heatmap'];
+  try {
+    // Najít poslední aktivní nastavení (může být podle uživatele nebo globálně)
+    const latestSetting = await ReportSetting.findOne({ enabled: true }).sort({ updatedAt: -1 }).lean();
+    if (latestSetting && Array.isArray(latestSetting.enabledSections)) {
+      enabledSections = latestSetting.enabledSections;
+    }
+  } catch {}
+
+  // --- AI sumarizace trendů a segmentů ---
+  let summary = '';
+  let ctrTrendPng = null;
+  let heatmapPng = null;
+  try {
+    // Top a bottom segmenty
+    const bottomSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>a.ctr-b.ctr).slice(0,1);
+    // Prompt pro OpenAI
+    if (enabledSections.includes('aiSummary')) {
+      const prompt = `Jsi marketingový analytik. Na základě těchto statistik:\n- Průměrné CTR: ${(avgCtr*100).toFixed(2)}%\n- Počet kampaní: ${campaignCount}\n- Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let (CTR ${(topSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\n- Nejslabší segment: ${bottomSegments.length ? `${bottomSegments[0].region}, ${bottomSegments[0].ageGroup} let (CTR ${(bottomSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\nStručně shrň hlavní trendy a doporučení pro růst v nejslabším segmentu. Odpověz česky, max. 3 věty.`;
+      const { default: axios } = require('axios');
+      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+      let aiSummary = '';
+      if (OPENAI_API_KEY) {
+        const openaiRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: 'Jsi marketingový analytik.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 120,
+          temperature: 0.6
+        }, {
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        aiSummary = openaiRes.data.choices[0].message.content.trim();
+      }
+      summary = aiSummary;
+    }
+    if (enabledSections.includes('ctrTrend')) {
+      ctrTrendPng = await generateCtrTrendChart(ctrTrendData);
+    }
+    if (enabledSections.includes('heatmap')) {
+      heatmapPng = await generateSegmentHeatmap(segmentHeatmapData);
+    }
+  } catch (e) {
+    summary = '';
+    ctrTrendPng = null;
+    heatmapPng = null;
+  }
+  // Vygenerovat PDF s ohledem na enabledSections
+  const pdfBuffer = await generateDashboardPdf({
+    stats: { avgCtr, campaignCount, topSegments },
+    summary: enabledSections.includes('aiSummary') ? summary : undefined,
+    ctrTrendPng: enabledSections.includes('ctrTrend') ? ctrTrendPng : undefined,
+    heatmapPng: enabledSections.includes('heatmap') ? heatmapPng : undefined
+  });
+  // Audit log
+  try {
+    const AuditLog = require('../models/AuditLog');
+    await AuditLog.create({
+      action: 'download_report',
+      performedBy: req.user._id,
+      details: {
+        ip: req.ip,
+        userAgent: req.headers['user-agent']
+      }
+    });
+  } catch (e) { /* ignore logging errors */ }
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'attachment; filename="dashboard-report.pdf"');
+  res.send(pdfBuffer);
 });
 // --- AI FEEDBACK EXPORT ---
 // GET /api/admin/ai-feedback-export?since=YYYY-MM-DD&segment=...&feedback=...&relevance=...&format=csv

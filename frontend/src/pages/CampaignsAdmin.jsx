@@ -1,3 +1,5 @@
+import ReportDownloadHistoryPanel from '../components/ReportDownloadHistoryPanel';
+import ReportSettingsPanel from '../components/ReportSettingsPanel';
 import AlertApprovalPanel from '../components/AlertApprovalPanel';
 import AdminReportPanel from '../components/AdminReportPanel';
 import AIFeedbackAnalyticsPanel from '../components/AIFeedbackAnalyticsPanel';
@@ -9,19 +11,124 @@ import AdminRoleManagerSection from '../components/AdminRoleManagerSection';
 import AuditLogPanel from '../components/AuditLogPanel';
 import SecurityAlertsPanel from '../components/SecurityAlertsPanel';
 import AIFeedbackExportPanel from '../components/AIFeedbackExportPanel';
-import TimeLogPanel from '../components/TimeLogPanel';
+import QuickFilterBar from '../components/QuickFilterBar';
+import CTRTrendChart from '../components/CTRTrendChart';
+import SegmentHeatmap from '../components/SegmentHeatmap';
+import { exportDashboardReport } from '../utils/exportDashboardReport';
+import { useRef } from 'react';
 
 const CampaignsAdmin = () => {
   // ...existing state and effect hooks...
+  const [campaignQuery, setCampaignQuery] = useState('');
+  const [filteredCampaigns, setFilteredCampaigns] = useState([]);
+  const [ctrTrendData, setCtrTrendData] = useState([]);
+  const [segmentHeatmapData, setSegmentHeatmapData] = useState([]);
+  const ctrChartRef = useRef();
+  const heatmapRef = useRef();
+
+  useEffect(() => {
+    if (!campaignQuery) {
+      setFilteredCampaigns(campaigns);
+    } else {
+      setFilteredCampaigns(
+        campaigns.filter(c =>
+          (c.tema && c.tema.toLowerCase().includes(campaignQuery.toLowerCase())) ||
+          (c.text && c.text.toLowerCase().includes(campaignQuery.toLowerCase())) ||
+          (c.faq && c.faq.toLowerCase().includes(campaignQuery.toLowerCase()))
+        )
+      );
+    }
+  }, [campaignQuery, campaigns]);
+
+  useEffect(() => {
+    // Vytvořit data pro CTR trend z kampaní
+    if (!campaigns) return;
+    // Skupinovat podle data (den)
+    const byDate = {};
+    campaigns.forEach(c => {
+      if (!c.createdAt || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+      const date = new Date(c.createdAt).toISOString().slice(0,10);
+      if (!byDate[date]) byDate[date] = { clicks: 0, sent: 0 };
+      byDate[date].clicks += c.clickCount;
+      byDate[date].sent += c.sentCount;
+    });
+    const trend = Object.entries(byDate).map(([date, v]) => ({ date, ctr: v.sent ? v.clicks/v.sent : 0 }));
+    setCtrTrendData(trend);
+  }, [campaigns]);
+
+  useEffect(() => {
+    // Agregace dat pro heatmapu podle regionu a věku
+    if (!campaigns) return;
+    const bySeg = {};
+    campaigns.forEach(c => {
+      if (!c.region || !c.age || typeof c.clickCount !== 'number' || typeof c.sentCount !== 'number' || c.sentCount === 0) return;
+      const region = c.region;
+      const ageGroup = Math.floor(c.age/10)*10;
+      const key = region+'_'+ageGroup;
+      if (!bySeg[key]) bySeg[key] = { region, ageGroup, clicks: 0, sent: 0 };
+      bySeg[key].clicks += c.clickCount;
+      bySeg[key].sent += c.sentCount;
+    });
+    const data = Object.values(bySeg).map(v => ({ region: v.region, ageGroup: v.ageGroup, ctr: v.sent ? v.clicks/v.sent : 0 }));
+    setSegmentHeatmapData(data);
+  }, [campaigns]);
+
+  // --- Export report ---
+  const handleExportReport = async () => {
+    // Základní statistiky
+    const avgCtr = ctrTrendData.length ? ctrTrendData.reduce((a,b)=>a+b.ctr,0)/ctrTrendData.length : 0;
+    const campaignCount = campaigns ? campaigns.length : 0;
+    // Top segmenty podle CTR
+    const topSegments = segmentHeatmapData
+      .filter(s => s.ctr > 0)
+      .sort((a,b)=>b.ctr-a.ctr)
+      .slice(0,3);
+    await exportDashboardReport({
+      ctrChartEl: ctrChartRef.current,
+      heatmapEl: heatmapRef.current,
+      stats: { avgCtr, campaignCount, topSegments }
+    });
+  };
 
   // --- Render ---
   return (
     <div>
+      <ReportSettingsPanel />
+      <ReportDownloadHistoryPanel />
+      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:8,gap:12}}>
+        <button onClick={handleExportReport} style={{fontSize:14,padding:'6px 16px',background:'#0ea5e9',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:600}}>Exportovat celý report (PDF)</button>
+        <button
+          onClick={() => {
+            const a = document.createElement('a');
+            a.href = '/api/admin/dashboard-report.pdf';
+            a.download = 'dashboard-report.pdf';
+            a.click();
+          }}
+          style={{fontSize:14,padding:'6px 16px',background:'#6366f1',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:600}}
+        >Stáhnout serverový PDF report</button>
+        <button
+          onClick={() => {
+            const a = document.createElement('a');
+            a.href = '/api/admin/dashboard-report.xlsx';
+            a.download = 'dashboard-report.xlsx';
+            a.click();
+          }}
+          style={{fontSize:14,padding:'6px 16px',background:'#059669',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:600}}
+        >Exportovat XLSX</button>
+        <button
+          onClick={() => {
+            const a = document.createElement('a');
+            a.href = '/api/admin/dashboard-report.csv';
+            a.download = 'dashboard-report.csv';
+            a.click();
+          }}
+          style={{fontSize:14,padding:'6px 16px',background:'#f59e42',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontWeight:600}}
+        >Exportovat CSV</button>
+      </div>
       <div className="flex items-center mb-4">
         <h1 className="text-2xl font-bold">Admin dashboard</h1>
         <AdminRoleBadge />
       </div>
-      <TimeLogPanel />
       <SecurityAlertsPanel />
       <AdminRoleManagerSection />
       <AuditLogPanel />
@@ -173,6 +280,20 @@ const CampaignsAdmin = () => {
             </tbody>
           </table>
         )}
+      </section>
+
+      {/* Sekce: Trend CTR */}
+      <section>
+        <div ref={ctrChartRef}>
+          <CTRTrendChart data={ctrTrendData} />
+        </div>
+      </section>
+
+      {/* Sekce: Heatmapa segmentů */}
+      <section>
+        <div ref={heatmapRef}>
+          <SegmentHeatmap data={segmentHeatmapData} />
+        </div>
       </section>
 
       {/* Spustit/plánovat A/B kampaň */}

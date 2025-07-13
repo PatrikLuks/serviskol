@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import QuickFilterBar from './QuickFilterBar';
 
 export default function AuditLogPanel() {
   const [logs, setLogs] = useState([]);
@@ -8,10 +9,27 @@ export default function AuditLogPanel() {
   const [since, setSince] = useState('');
   const [action, setAction] = useState('');
   const [admin, setAdmin] = useState('');
+  const [logQuery, setLogQuery] = useState('');
+  const [filteredLogs, setFilteredLogs] = useState([]);
 
   useEffect(() => {
     fetchLogs();
   }, []);
+
+  useEffect(() => {
+    if (!logQuery) {
+      setFilteredLogs(logs);
+    } else {
+      setFilteredLogs(
+        logs.filter(l =>
+          (l.action && l.action.toLowerCase().includes(logQuery.toLowerCase())) ||
+          (l.performedBy?.name && l.performedBy.name.toLowerCase().includes(logQuery.toLowerCase())) ||
+          (l.targetUser?.name && l.targetUser.name.toLowerCase().includes(logQuery.toLowerCase())) ||
+          (l.details && JSON.stringify(l.details).toLowerCase().includes(logQuery.toLowerCase()))
+        )
+      );
+    }
+  }, [logQuery, logs]);
 
   async function fetchLogs() {
     setLoading(true);
@@ -42,6 +60,7 @@ export default function AuditLogPanel() {
   return (
     <div style={{marginTop:32}}>
       <h3>Audit log admin akcí</h3>
+      <QuickFilterBar query={logQuery} setQuery={setLogQuery} onSearch={()=>{}} />
       <div style={{marginBottom:8}}>
         <input type="date" value={since} onChange={e=>setSince(e.target.value)} />
         <input type="text" placeholder="Akce" value={action} onChange={e=>setAction(e.target.value)} style={{marginLeft:8}} />
@@ -63,7 +82,7 @@ export default function AuditLogPanel() {
             </tr>
           </thead>
           <tbody>
-            {logs.map(l => (
+            {filteredLogs.map(l => (
               <tr key={l._id}>
                 <td>{l.action}</td>
                 <td>{l.performedBy?.name}</td>

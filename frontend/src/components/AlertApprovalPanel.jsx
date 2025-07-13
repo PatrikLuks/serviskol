@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import QuickFilterBar from './QuickFilterBar';
 
 export default function AlertApprovalPanel() {
   const [alerts, setAlerts] = useState([]);
@@ -9,6 +10,8 @@ export default function AlertApprovalPanel() {
   const [editing, setEditing] = useState(null);
   const [editMessage, setEditMessage] = useState('');
   const [actionResult, setActionResult] = useState('');
+  const [alertQuery, setAlertQuery] = useState('');
+  const [filteredAlerts, setFilteredAlerts] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -26,6 +29,21 @@ export default function AlertApprovalPanel() {
         setLoading(false);
       });
   }, [actionResult]);
+
+  useEffect(() => {
+    if (!alertQuery) {
+      setFilteredAlerts(alerts);
+    } else {
+      setFilteredAlerts(
+        alerts.filter(a =>
+          (a.message && a.message.toLowerCase().includes(alertQuery.toLowerCase())) ||
+          (a.segment && Object.values(a.segment).join(' ').toLowerCase().includes(alertQuery.toLowerCase())) ||
+          (a.proposedAction?.message && a.proposedAction.message.toLowerCase().includes(alertQuery.toLowerCase()))
+        )
+      );
+    }
+  }, [alertQuery, alerts]);
+
   const handleOverride = async (alert, newStatus) => {
     setActionResult('');
     try {
@@ -72,7 +90,8 @@ export default function AlertApprovalPanel() {
   const autoPanel = autoApproved.length > 0 && (
     <div className="mb-8 p-4 border rounded bg-green-50">
       <div className="font-bold mb-2 text-green-900">Automaticky schválené návrhy (AI auto-approval)</div>
-      {autoApproved.map(alert => (
+      <QuickFilterBar query={alertQuery} setQuery={setAlertQuery} onSearch={()=>{}} />
+      {filteredAlerts.map(alert => (
         <div key={alert._id} className="mb-4 p-2 border rounded bg-white">
           <div className="mb-1 text-sm text-gray-700">
             <b>Segment:</b> {Object.entries(alert.segment || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}
