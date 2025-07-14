@@ -1,4 +1,7 @@
+const express = require('express');
+const router = express.Router();
 const { Parser } = require('json2csv');
+const Campaign = require('../models/Campaign');
 // GET /api/admin/followup-metrics-export
 router.get('/followup-metrics-export', async (req, res) => {
   try {
@@ -26,10 +29,8 @@ router.get('/followup-metrics-export', async (req, res) => {
     res.status(500).json({ error: 'Chyba při exportu metrik.' });
   }
 });
-// Endpoint pro získání metrik follow-up kampaně podle campaignId
-const express = require('express');
-const router = express.Router();
-const Campaign = require('../models/Campaign');
+
+module.exports = router;
 
 // GET /api/admin/followup-metrics/:campaignId
 router.get('/followup-metrics/:campaignId', async (req, res) => {

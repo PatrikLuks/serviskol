@@ -1,3 +1,6 @@
+const { adminOnly } = require('../middleware/auth');
+const express = require('express');
+const router = express.Router();
 
 // Naplánuje A/B test follow-up zpráv pro segment a kanál
 router.post('/alert-logs/execute-segment-followup-ab', adminOnly, async (req, res) => {
@@ -45,8 +48,11 @@ router.post('/alert-logs/execute-segment-followup-ab', adminOnly, async (req, re
     res.json({ result: 'success', campaignId: campaign._id });
   } catch (e) {
     res.status(500).json({ error: 'Chyba při plánování A/B testu.' });
+
   }
 });
+
+module.exports = router;
 // Spustí follow-up kampaň pro zadaný segment a kanál (vytvoří AlertLog a Campaign)
 router.post('/alert-logs/execute-segment-followup', adminOnly, async (req, res) => {
   const userId = req.user?._id;

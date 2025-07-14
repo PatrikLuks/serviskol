@@ -16,4 +16,27 @@ function auth(req, res, next) {
   }
 }
 
-module.exports = auth;
+
+// Middleware: povolí pouze admin uživatele
+function adminOnly(req, res, next) {
+  if (!req.user || !req.user.role || req.user.role !== 'admin') {
+    return res.status(403).json({ msg: 'Přístup pouze pro adminy.' });
+  }
+  next();
+}
+
+// Middleware: povolí pouze uživatele s určitou rolí (např. 'superadmin')
+function adminRole(role) {
+  return function (req, res, next) {
+    if (!req.user || !req.user.role || req.user.role !== role) {
+      return res.status(403).json({ msg: `Přístup pouze pro roli: ${role}` });
+    }
+    next();
+  };
+}
+
+module.exports = {
+  auth,
+  adminOnly,
+  adminRole
+};

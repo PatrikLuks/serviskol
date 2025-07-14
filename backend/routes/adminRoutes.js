@@ -1,5 +1,11 @@
-// --- BI ENDPOINT: Export kampaní ---
+const express = require('express');
+const router = express.Router();
+const { Parser } = require('json2csv');
+const { adminOnly, adminRole } = require('../middleware/auth');
 const User = require('../models/User');
+const AuditLog = require('../models/AuditLog');
+
+// --- BI ENDPOINT: Export kampaní ---
 router.get('/bi/campaigns', async (req, res) => {
   // Autentizace přes API klíč v hlavičce X-API-KEY nebo query parametru
   const apiKey = req.headers['x-api-key'] || req.query.apiKey;
@@ -121,7 +127,7 @@ router.get('/dashboard-report.csv', adminOnly, adminRole('superadmin'), async (r
   });
   // Audit log
   try {
-    const AuditLog = require('../models/AuditLog');
+    // ...existing code...
     await AuditLog.create({
       action: 'export_report_csv',
       performedBy: req.user._id,
@@ -221,7 +227,7 @@ router.get('/dashboard-report.xlsx', adminOnly, adminRole('superadmin'), async (
   });
   // Audit log
   try {
-    const AuditLog = require('../models/AuditLog');
+    // ...existing code...
     await AuditLog.create({
       action: 'export_report_xlsx',
       performedBy: req.user._id,
@@ -341,7 +347,7 @@ router.get('/dashboard-report.pdf', adminOnly, adminRole('superadmin'), async (r
   });
   // Audit log
   try {
-    const AuditLog = require('../models/AuditLog');
+    // ...existing code...
     await AuditLog.create({
       action: 'download_report',
       performedBy: req.user._id,
@@ -415,8 +421,8 @@ router.get('/audit-log', adminOnly, adminRole('superadmin'), async (req, res) =>
   res.json(logs);
 });
 // --- SPRÁVA ADMINŮ A ROLÍ ---
-const User = require('../models/User');
-const AuditLog = require('../models/AuditLog');
+// ...existing code...
+// ...existing code...
 // GET /api/admin/admins - výpis všech adminů a jejich rolí (pouze superadmin)
 router.get('/admins', adminOnly, adminRole('superadmin'), async (req, res) => {
   const admins = await User.find({ role: 'admin' }).select('_id name email adminRole createdAt lastLogin').lean();
@@ -460,7 +466,7 @@ router.get('/security-alerts', adminOnly, async (req, res) => {
 });
 // GET /api/admin/me - info o přihlášeném adminovi
 router.get('/me', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const user = await User.findById(req.user._id).lean();
   if (!user) return res.status(404).json({ error: 'Uživatel nenalezen.' });
   res.json({
@@ -560,7 +566,7 @@ router.patch('/alert-logs/:id', adminOnly, async (req, res) => {
   }
   res.status(400).json({ error: 'Chybí data pro úpravu.' });
 });
-const adminRole = require('../middleware/adminRole');
+// ...existing code...
 // PATCH /api/admin/alert-logs/:id/approve-action
 router.patch('/alert-logs/:id/approve-action', adminOnly, adminRole('approver'), async (req, res) => {
   const userId = req.user?._id;
@@ -604,7 +610,7 @@ router.use(abFollowupResults);
 router.use(abFollowupWinner);
 // GET /api/admin/segment-engagement-trends
 router.get('/segment-engagement-trends', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const days = 90;
   const now = new Date();
   const { role, region, ageGroup, channel } = req.query;
@@ -674,7 +680,7 @@ router.patch('/alert-logs/:id/cancel-followup', adminOnly, async (req, res) => {
 router.post('/alert-logs/:id/execute-followup', adminOnly, async (req, res) => {
   const userId = req.user?._id;
   const AlertLog = require('../models/AlertLog');
-  const User = require('../models/User');
+  // ...existing code...
   const Campaign = require('../models/Campaign');
   const log = await AlertLog.findOne({ _id: req.params.id, admin: userId });
   if (!log || log.actionType !== 'followup') return res.status(404).json({ error: 'Alert nebo follow-up akce nenalezena.' });
@@ -730,7 +736,7 @@ router.post('/alert-logs/:id/execute-followup', adminOnly, async (req, res) => {
 router.post('/alert-logs/:id/execute-action', adminOnly, async (req, res) => {
   const userId = req.user?._id;
   const AlertLog = require('../models/AlertLog');
-  const User = require('../models/User');
+  // ...existing code...
   const log = await AlertLog.findOne({ _id: req.params.id, admin: userId });
   if (!log || !log.action) return res.status(404).json({ error: 'Alert nebo akce nenalezena.' });
   let result = 'not-executed';
@@ -933,7 +939,7 @@ router.get('/channel-sends-timeseries', adminOnly, async (req, res) => {
 });
 // GET /api/admin/decision-tree-channel/export-csv
 router.get('/decision-tree-channel/export-csv', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const { Parser } = require('json2csv');
   const users = await User.find({});
   const rows = users.map(u => {
@@ -957,7 +963,7 @@ router.get('/decision-tree-channel/export-csv', adminOnly, async (req, res) => {
 });
 // GET /api/admin/user/:id/decision-tree-channel
 router.get('/user/:id/decision-tree-channel', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'Uživatel nenalezen.' });
   const result = User.decisionTreeChannel(user);
@@ -965,7 +971,7 @@ router.get('/user/:id/decision-tree-channel', adminOnly, async (req, res) => {
 });
 // GET /api/admin/segment-engagement-trends/export-csv
 router.get('/segment-engagement-trends/export-csv', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const { Parser } = require('json2csv');
   const days = 90;
   const now = new Date();
@@ -1018,7 +1024,7 @@ router.get('/segment-engagement-trends/export-csv', adminOnly, async (req, res) 
 });
 // PATCH /api/admin/users/bulk-preferred-channel
 router.patch('/users/bulk-preferred-channel', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const { segment, preferredChannel } = req.body;
   if (!segment || !preferredChannel) return res.status(400).json({ error: 'Chybí segment nebo kanál.' });
   if (!['in-app','email','push','sms'].includes(preferredChannel)) return res.status(400).json({ error: 'Neplatný kanál.' });
@@ -1054,7 +1060,7 @@ router.patch('/users/bulk-preferred-channel', adminOnly, async (req, res) => {
 });
 // GET /api/admin/channel-engagement-drop-recommendations
 router.get('/channel-engagement-drop-recommendations', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const now = new Date();
   const days = 60; // 30 dní + 30 dní
   const users = await User.find({});
@@ -1130,7 +1136,6 @@ router.get('/channel-engagement-drop-recommendations', adminOnly, async (req, re
 });
 // GET /api/admin/channel-change-log/export-csv
 router.get('/channel-change-log/export-csv', adminOnly, (req, res) => {
-  const fs = require('fs');
   const { Parser } = require('json2csv');
   const logPath = '/tmp/audit.log';
   if (!fs.existsSync(logPath)) return res.status(404).send('Log nenalezen.');
@@ -1154,7 +1159,7 @@ router.get('/channel-change-log/export-csv', adminOnly, (req, res) => {
 });
 // GET /api/admin/channel-engagement-timeseries
 router.get('/channel-engagement-timeseries', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const days = 90;
   const now = new Date();
   const users = await User.find({});
@@ -1185,7 +1190,7 @@ router.get('/channel-engagement-timeseries', adminOnly, async (req, res) => {
 });
 // GET /api/admin/user/:id/predict-channel
 router.get('/user/:id/predict-channel', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'Uživatel nenalezen.' });
   const bestChannel = User.predictBestChannel(user);
@@ -1193,7 +1198,7 @@ router.get('/user/:id/predict-channel', adminOnly, async (req, res) => {
 });
 // PATCH /api/admin/user/:id/preferred-channel
 router.patch('/user/:id/preferred-channel', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   const { preferredChannel } = req.body;
   if (!['in-app', 'email', 'push', 'sms'].includes(preferredChannel)) {
     return res.status(400).json({ error: 'Neplatný kanál.' });
@@ -1217,7 +1222,7 @@ router.patch('/user/:id/preferred-channel', adminOnly, async (req, res) => {
 
 // GET /api/admin/channel-engagement-report
 router.get('/channel-engagement-report', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   // Agregace engagementu podle kanálu
   const users = await User.find({});
   const report = { inApp: 0, email: 0, push: 0, sms: 0 };
@@ -1232,7 +1237,7 @@ router.get('/channel-engagement-report', adminOnly, async (req, res) => {
 });
 // GET /api/admin/campaigns-user-recommendation
 router.get('/campaigns-user-recommendation', adminOnly, async (req, res) => {
-  const User = require('../models/User');
+  // ...existing code...
   // Volitelně: segmentace podle role, regionu, věku
   const query = {};
   if (req.query.role) query.role = req.query.role;
@@ -1307,7 +1312,7 @@ router.get('/campaigns-recommendation', adminOnly, async (req, res) => {
 // GET /api/admin/campaigns-report
 router.get('/campaigns-report', adminOnly, async (req, res) => {
   const Campaign = require('../models/Campaign');
-  const User = require('../models/User');
+  // ...existing code...
   // Filtrování podle období, segmentu, typu
   const query = {};
   if (req.query.since) query.createdAt = { $gte: new Date(req.query.since) };
@@ -1427,7 +1432,6 @@ router.post('/campaigns/launch-ab', adminOnly, async (req, res) => {
   if (!tema || !variants || !Array.isArray(variants) || variants.length < 1) {
     return res.status(400).json({ error: 'Chybí téma nebo varianty.' });
   }
-  const User = require('../models/User');
   const Campaign = require('../models/Campaign');
   const { createNotification } = require('../utils/notificationUtils');
   const { auditLog } = require('../middleware/auditLog');
@@ -1508,11 +1512,6 @@ router.post('/campaigns/launch-ab', adminOnly, async (req, res) => {
   });
   res.json({ success: true, userCount: users.length, campaignId: campaign._id, status });
 });
-const express = require('express');
-const router = express.Router();
-const adminOnly = require('../middleware/adminOnly');
-const fs = require('fs');
-const { Parser } = require('json2csv');
 
 // GET /api/admin/campaigns
 router.get('/campaigns', adminOnly, (req, res) => {

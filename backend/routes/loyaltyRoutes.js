@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const LoyaltyPoints = require('../models/LoyaltyPoints');
 const { createNotification } = require('../utils/notificationUtils');
 const { sendPushNotification } = require('../utils/pushUtils');

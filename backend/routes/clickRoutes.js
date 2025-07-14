@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { auditLog } = require('../middleware/auditLog');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
 // GET /api/click?faq=...&campaign=...&redirect=...
 const Campaign = require('../models/Campaign');

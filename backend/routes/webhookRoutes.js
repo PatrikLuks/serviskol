@@ -1,10 +1,15 @@
+const express = require('express');
+const router = express.Router();
+const Webhook = require('../models/Webhook');
+const { adminOnly, adminRole } = require('../middleware/auth');
+const AuditLog = require('../models/AuditLog');
 const runWebhooksCron = require('../scripts/runWebhooksCron');
+
 // POST /api/admin/webhooks/:id/trigger - ruční spuštění webhooku
 router.post('/:id/trigger', adminOnly, adminRole('superadmin'), async (req, res) => {
-  const Webhook = require('../models/Webhook');
   const webhook = await Webhook.findById(req.params.id);
   if (!webhook) return res.status(404).json({ error: 'Webhook nenalezen.' });
-  const deliver = require('../scripts/runWebhooksCron').__esModule ? require('../scripts/runWebhooksCron').deliverWebhook : require('../scripts/runWebhooksCron').deliverWebhook;
+  const deliver = runWebhooksCron.__esModule ? runWebhooksCron.deliverWebhook : runWebhooksCron.deliverWebhook;
   try {
     await deliver(webhook);
     res.json({ ok: true, status: webhook.lastStatus, response: webhook.lastResponse });
@@ -15,18 +20,12 @@ router.post('/:id/trigger', adminOnly, adminRole('superadmin'), async (req, res)
 
 // GET /api/admin/webhooks/:id/history - výpis historie doručení (z audit logu)
 router.get('/:id/history', adminOnly, adminRole('superadmin'), async (req, res) => {
-  const AuditLog = require('../models/AuditLog');
   const logs = await AuditLog.find({
     action: 'webhook_deliver',
     'details.webhookId': req.params.id
   }).sort({ createdAt: -1 }).lean();
   res.json(logs);
 });
-const express = require('express');
-const router = express.Router();
-const Webhook = require('../models/Webhook');
-const { adminOnly, adminRole } = require('../middleware/auth');
-const AuditLog = require('../models/AuditLog');
 
 // GET /api/admin/webhooks - seznam webhooků
 router.get('/', adminOnly, adminRole('superadmin'), async (req, res) => {

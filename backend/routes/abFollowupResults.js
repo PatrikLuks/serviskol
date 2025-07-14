@@ -1,4 +1,6 @@
 // Export výsledků A/B testů follow-upů do CSV
+const express = require('express');
+const router = express.Router();
 const { Parser } = require('json2csv');
 router.get('/ab-followup-results/export-csv', async (req, res) => {
   const { role, region, ageGroup, channel } = req.query;
@@ -32,10 +34,8 @@ router.get('/ab-followup-results/export-csv', async (req, res) => {
   return res.send(csv);
 });
 // Vrátí výsledky A/B testů follow-upů pro daný segment a kanál
-const express = require('express');
-const router = express.Router();
-const Campaign = require('../models/Campaign');
 
+module.exports = router;
 router.get('/ab-followup-results', async (req, res) => {
   const { role, region, ageGroup, channel } = req.query;
   if (!role || !region || !ageGroup || !channel) return res.status(400).json({ error: 'Chybí segment nebo kanál.' });

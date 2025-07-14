@@ -1,3 +1,9 @@
+
+const express = require('express');
+const router = express.Router();
+const { Parser } = require('json2csv');
+const AuditLog = require('../models/AuditLog');
+
 // GET /api/bi/ai-segment-history - historie změn AI segmentu
 router.get('/ai-segment-history', requireApiKey, async (req, res) => {
   try {
@@ -162,10 +168,6 @@ router.get('/engagement-metrics', requireApiKey, async (req, res) => {
   }
   res.json(metrics);
 });
-const express = require('express');
-const router = express.Router();
-const Campaign = require('../models/Campaign');
-const Segment = require('../models/Segment');
 // /api/bi/segments?format=csv|json&apiKey=...
 router.get('/segments', requireApiKey, async (req, res) => {
   const { format } = req.query;
@@ -201,9 +203,7 @@ router.get('/segments', requireApiKey, async (req, res) => {
   }
   res.json(segments);
 });
-const User = require('../models/User');
-const { Parser } = require('json2csv');
-const AuditLog = require('../models/AuditLog');
+
 
 // GET /api/bi/segments/ai - seznam AI segmentů a počty uživatelů
 router.get('/segments/ai', requireApiKey, async (req, res) => {

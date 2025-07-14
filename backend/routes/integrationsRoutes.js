@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
 // GET /api/integrations/weather?lat=...&lon=...
 router.get('/weather', auth, async (req, res) => {

@@ -1,3 +1,13 @@
+// ...odstraněno nevalidní vložení objektu mimo pole endpoints...
+const express = require('express');
+const router = express.Router();
+
+// Dynamicky generovaná dokumentace BI API
+router.get('/docs', (req, res) => {
+  const docs = {
+    title: 'ServisKol BI API',
+    description: 'Otevřené API pro export dat, reporting a BI integrace. Všechny endpointy vyžadují platný API klíč s odpovídajícími oprávněními.',
+    endpoints: [
       {
         path: '/api/bi/ai-segment-history',
         method: 'GET',
@@ -13,15 +23,6 @@
           curl: 'curl "https://serviskol.cz/api/bi/ai-segment-history?from=2025-01-01&apiKey=TVUJ_KLIC"'
         }
       },
-const express = require('express');
-const router = express.Router();
-
-// Dynamicky generovaná dokumentace BI API
-router.get('/docs', (req, res) => {
-  const docs = {
-    title: 'ServisKol BI API',
-    description: 'Otevřené API pro export dat, reporting a BI integrace. Všechny endpointy vyžadují platný API klíč s odpovídajícími oprávněními.',
-    endpoints: [
       {
         path: '/api/bi/campaigns',
         method: 'GET',

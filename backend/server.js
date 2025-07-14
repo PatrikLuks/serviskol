@@ -1,43 +1,11 @@
-const biAlertsRoutes = require('./routes/biAlertsRoutes');
-const biAlertsAiSuggestRoutes = require('./routes/biAlertsAiSuggestRoutes');
-const biAlertsActivateVariantRoutes = require('./routes/biAlertsActivateVariantRoutes');
-const biVariantTrendPredictionRoutes = require('./routes/biVariantTrendPredictionRoutes');
-const biNextBestActionRoutes = require('./routes/biNextBestActionRoutes');
-
 // ...existing code...
-const followupHistoryExport = require('./routes/followupHistoryExport');
-app.use('/api/bi', followupHistoryExport);
-const followupPredictBestVariant = require('./routes/followupPredictBestVariant');
-app.use('/api/bi', followupPredictBestVariant);
-const followupAutomationAiRoutes = require('./routes/followupAutomationAiRoutes');
-app.use('/api/admin/followup-automation', followupAutomationAiRoutes);
-const followupEffectivenessRoutes = require('./routes/followupEffectivenessRoutes');
-app.use('/api/bi', followupEffectivenessRoutes);
-const followupAutomationRoutes = require('./routes/followupAutomationRoutes');
-app.use('/api/admin/followup-automation', followupAutomationRoutes);
-const biDocsRoutes = require('./routes/biDocsRoutes');
-app.use('/api/bi', biDocsRoutes);
-const webhookRoutes = require('./routes/webhookRoutes');
-app.use('/api/admin/webhooks', webhookRoutes);
-const apiKeyRoutes = require('./routes/apiKeyRoutes');
-app.use('/api/admin/api-keys', apiKeyRoutes);
-const biRoutes = require('./routes/biRoutes');
-app.use('/api/bi', biRoutes);
-const reportSettingRoutes = require('./routes/reportSettingRoutes');
-app.use('/api/admin/report-settings', reportSettingRoutes);
-const clickRoutes = require('./routes/clickRoutes');
-app.use('/api/click', clickRoutes);
-const adminRoutes = require('./routes/adminRoutes');
-app.use('/api/admin', adminRoutes);
-const followupMetricsRoutes = require('./routes/followupMetrics');
-app.use('/api/admin', followupMetricsRoutes);
-// Základní Express server pro Serviskol
 const express = require('express');
 const connectDB = require('./config/db');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+
 require('dotenv').config({ path: __dirname + '/.env' });
 const Sentry = require('@sentry/node');
 const promClient = require('prom-client');
@@ -55,6 +23,61 @@ if (process.env.SENTRY_DSN) {
   });
   app.use(Sentry.Handlers.requestHandler());
 }
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: 'Příliš mnoho požadavků, zkuste to později.' }));
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Připojení k databázi
+connectDB();
+
+// Základní route
+app.get('/', (req, res) => {
+  res.send('Serviskol backend běží!');
+});
+
+// ROUTES REGISTRATION (až po inicializaci app)
+const biAlertsRoutes = require('./routes/biAlertsRoutes');
+const biAlertsAiSuggestRoutes = require('./routes/biAlertsAiSuggestRoutes');
+const biAlertsActivateVariantRoutes = require('./routes/biAlertsActivateVariantRoutes');
+const biVariantTrendPredictionRoutes = require('./routes/biVariantTrendPredictionRoutes');
+const biNextBestActionRoutes = require('./routes/biNextBestActionRoutes');
+const followupHistoryExport = require('./routes/followupHistoryExport');
+const followupPredictBestVariant = require('./routes/followupPredictBestVariant');
+const followupAutomationAiRoutes = require('./routes/followupAutomationAiRoutes');
+const followupEffectivenessRoutes = require('./routes/followupEffectivenessRoutes');
+const followupAutomationRoutes = require('./routes/followupAutomationRoutes');
+const biDocsRoutes = require('./routes/biDocsRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
+const apiKeyRoutes = require('./routes/apiKeyRoutes');
+const biRoutes = require('./routes/biRoutes');
+const reportSettingRoutes = require('./routes/reportSettingRoutes');
+const clickRoutes = require('./routes/clickRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const followupMetricsRoutes = require('./routes/followupMetrics');
+
+app.use('/api/bi/alerts', biAlertsRoutes);
+app.use('/api/bi/alerts', biAlertsAiSuggestRoutes);
+app.use('/api/bi/alerts', biAlertsActivateVariantRoutes);
+app.use('/api/bi/variant-trend-prediction', biVariantTrendPredictionRoutes);
+app.use('/api/bi/next-best-action', biNextBestActionRoutes);
+app.use('/api/bi', followupHistoryExport);
+app.use('/api/bi', followupPredictBestVariant);
+app.use('/api/admin/followup-automation', followupAutomationAiRoutes);
+app.use('/api/bi', followupEffectivenessRoutes);
+app.use('/api/admin/followup-automation', followupAutomationRoutes);
+app.use('/api/bi', biDocsRoutes);
+app.use('/api/admin/webhooks', webhookRoutes);
+app.use('/api/admin/api-keys', apiKeyRoutes);
+app.use('/api/bi', biRoutes);
+app.use('/api/admin/report-settings', reportSettingRoutes);
+app.use('/api/click', clickRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin', followupMetricsRoutes);
+// ...odstraněno duplicitní deklarace...
 
 // Middleware
 app.use(helmet());

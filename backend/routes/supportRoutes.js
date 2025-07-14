@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { auditLog } = require('../middleware/auditLog');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
 // POST /api/support/ticket
 router.post('/ticket', auth, async (req, res) => {

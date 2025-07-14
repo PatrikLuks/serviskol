@@ -1,3 +1,45 @@
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  passwordHash: { type: String, required: true },
+  role: { type: String, enum: ['client', 'mechanic', 'admin'], required: true },
+  adminRole: { type: String, enum: ['superadmin', 'approver', 'readonly'], default: 'approver' },
+  loyaltyLevel: { type: String, enum: ['Bronze', 'Silver', 'Gold', 'Platinum'], default: 'Bronze' },
+  bikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bike' }],
+  createdAt: { type: Date, default: Date.now },
+  region: { type: String },
+  age: { type: Number },
+  lastLogin: { type: Date },
+  engagementScore: { type: Number, default: 0 },
+  pushToken: { type: String }, // FCM nebo OneSignal token
+  notificationChannel: { type: String, enum: ['in-app', 'email', 'push'], default: 'in-app' },
+  twoFactorSecret: { type: String }, // base32
+  twoFactorEnabled: { type: Boolean, default: false },
+  campaignClicks: [{
+    campaign: { type: String }, // tema nebo campaignId
+    variant: { type: String },
+    faq: { type: String },
+    clickedAt: { type: Date, default: Date.now },
+    channel: { type: String } // in-app, email, push, sms
+  }],
+  preferredChannel: { type: String, enum: ['in-app', 'email', 'push', 'sms'], default: 'in-app' },
+  channelEngagement: {
+    inApp: { type: Number, default: 0 },
+    email: { type: Number, default: 0 },
+    push: { type: Number, default: 0 },
+    sms: { type: Number, default: 0 }
+  },
+  // AI segmentace (VIP, riziko_odchodu, aktivní, ostatní)
+  aiSegment: { type: String, default: 'ostatní' },
+  // API klíč pro BI/reporting
+  apiKey: { type: String, unique: true, sparse: true },
+  // Granularita oprávnění k API klíči
+  apiKeyPermissions: [{ type: String }]
+});
+
 // Decision tree predikce nejlepšího kanálu
 userSchema.statics.decisionTreeChannel = function(user) {
   // Základní pravidla (lze rozšířit):
@@ -39,51 +81,6 @@ userSchema.statics.predictBestChannel = function(user) {
   if (best[1] > 0) return best[0] === 'inApp' ? 'in-app' : best[0];
   return user.preferredChannel || 'in-app';
 };
-// User model pro MongoDB (Mongoose)
-
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-
-
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  passwordHash: { type: String, required: true },
-  role: { type: String, enum: ['client', 'mechanic', 'admin'], required: true },
-  adminRole: { type: String, enum: ['superadmin', 'approver', 'readonly'], default: 'approver' },
-  adminRole: { type: String, enum: ['superadmin', 'approver', 'readonly'], default: 'approver' },
-  loyaltyLevel: { type: String, enum: ['Bronze', 'Silver', 'Gold', 'Platinum'], default: 'Bronze' },
-  bikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bike' }],
-  createdAt: { type: Date, default: Date.now },
-  region: { type: String },
-  age: { type: Number },
-  lastLogin: { type: Date },
-  engagementScore: { type: Number, default: 0 },
-  pushToken: { type: String }, // FCM nebo OneSignal token
-  notificationChannel: { type: String, enum: ['in-app', 'email', 'push'], default: 'in-app' },
-  twoFactorSecret: { type: String }, // base32
-  twoFactorEnabled: { type: Boolean, default: false },
-  campaignClicks: [{
-    campaign: { type: String }, // tema nebo campaignId
-    variant: { type: String },
-    faq: { type: String },
-    clickedAt: { type: Date, default: Date.now },
-    channel: { type: String } // in-app, email, push, sms
-  }],
-  preferredChannel: { type: String, enum: ['in-app', 'email', 'push', 'sms'], default: 'in-app' },
-  channelEngagement: {
-    inApp: { type: Number, default: 0 },
-    email: { type: Number, default: 0 },
-    push: { type: Number, default: 0 },
-    sms: { type: Number, default: 0 }
-  },
-  // AI segmentace (VIP, riziko_odchodu, aktivní, ostatní)
-  aiSegment: { type: String, default: 'ostatní' },
-  // API klíč pro BI/reporting
-  apiKey: { type: String, unique: true, sparse: true },
-  // Granularita oprávnění k API klíči
-  apiKeyPermissions: [{ type: String }]
-});
 
 // Hashování hesla před uložením
 userSchema.pre('save', async function (next) {
