@@ -3,6 +3,21 @@ const app = require('../server');
 const mongoose = require('mongoose');
 const AIMessage = require('../models/AIMessage');
 
+// Mock OpenAI API
+jest.mock('openai', () => {
+  return function () {
+    return {
+      createChatCompletion: jest.fn().mockResolvedValue({
+        data: {
+          choices: [
+            { message: { content: 'Mockovaná odpověď AI.' } }
+          ]
+        }
+      })
+    };
+  };
+});
+
 // Pomocná funkce pro získání JWT tokenu (případně upravte podle svého auth systému)
 const getToken = async () => {
   // TODO: Implementujte získání platného JWT tokenu pro testovacího uživatele
@@ -27,7 +42,7 @@ describe('AI Routes', () => {
       .send({ message: 'Jaké je dnes počasí?' });
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('reply');
-    expect(res.body).toHaveProperty('message');
+    expect(res.body).toHaveProperty('id');
   });
 
   it('GET /api/ai/history - vrátí historii', async () => {
@@ -40,11 +55,11 @@ describe('AI Routes', () => {
 
   it('POST /api/ai/rate - uloží hodnocení', async () => {
     // Nejprve vytvoříme zprávu
-    const msg = await AIMessage.create({ userId: 'test', message: 'test', reply: 'test' });
+    const msg = await AIMessage.create({ userId: '507f1f77bcf86cd799439011', message: 'test', reply: 'test' });
     const res = await request(app)
       .post('/api/ai/rate')
       .set('Authorization', `Bearer ${token}`)
-      .send({ messageId: msg._id, rating: 5, feedback: 'Výborné!' });
+      .send({ id: msg._id, rating: 5, feedback: 'Výborné!' });
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('success', true);
     // Úklid

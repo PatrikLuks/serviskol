@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Reward, LeaderboardEntry } = require('../models/Gamification');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const User = require('../models/User');
 
 // GET /api/gamification/rewards - seznam odměn

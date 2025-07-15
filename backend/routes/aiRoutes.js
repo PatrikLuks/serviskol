@@ -1,16 +1,16 @@
 
 const express = require('express');
-const { Configuration, OpenAIApi } = require('openai');
-const auth = require('../middleware/auth');
-const rateLimit = require('express-rate-limit');
+const OpenAI = require('openai');
+const { auth, adminOnly, adminRole } = require('../middleware/auth');
 const AIMessage = require('../models/AIMessage');
 const { auditLog } = require('../middleware/auditLog');
 const promClient = require('prom-client');
 
-const router = express.Router();
-const openai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }));
+const rateLimit = require('express-rate-limit');
 
-const limiter = rateLimit({ windowMs: 60 * 1000, max: 5, message: 'Příliš mnoho AI dotazů, zkuste to později.' });
+const router = express.Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
 
 // Prometheus metriky
 const aiChatRequests = new promClient.Counter({ name: 'ai_chat_requests_total', help: 'Počet AI chat požadavků' });
@@ -18,7 +18,7 @@ const aiChatErrors = new promClient.Counter({ name: 'ai_chat_errors_total', help
 const aiChatDuration = new promClient.Histogram({ name: 'ai_chat_duration_seconds', help: 'Doba zpracování AI chatu', buckets: [0.5, 1, 2, 5, 10] });
 
 // POST /api/ai/chat
-router.post('/chat', auth, limiter, async (req, res) => {
+router.post('/chat', auth, async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Chybí dotaz.' });
   aiChatRequests.inc();
@@ -109,7 +109,6 @@ router.post('/rate', auth, async (req, res) => {
   }
 });
 
-const adminOnly = require('../middleware/adminOnly');
 const { Parser } = require('json2csv');
 
 // ADMIN: report všech hodnocení a zpětné vazby (JSON nebo CSV)

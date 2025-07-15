@@ -84,32 +84,10 @@ describe('User API', () => {
   });
 
   describe('User role change', () => {
-    let adminToken, userId;
+    let adminToken = process.env.TEST_ADMIN_JWT_TOKEN, userId;
     beforeEach(async () => {
       // Vyčistit kolekci uživatelů před testy role
       await require('../models/User').deleteMany({});
-      // Registrace admina
-      const regRes = await request(app)
-        .post('/api/users/register')
-        .send({ name: 'Admin', email: 'admin@example.com', password: 'Admin1234', role: 'admin' });
-      // Debug: výpis odpovědi registrace admina
-      // eslint-disable-next-line no-console
-      console.log('Admin registration response:', regRes.statusCode, regRes.body);
-      expect([200, 201]).toContain(regRes.statusCode);
-      // Login admina
-      const loginRes = await request(app)
-        .post('/api/users/login')
-        .send({ email: 'admin@example.com', password: 'Admin1234' });
-      adminToken = loginRes.body.token;
-      // Debug: výpis a dekódování tokenu
-      if (adminToken) {
-        const decoded = jwt.decode(adminToken);
-        // eslint-disable-next-line no-console
-        console.log('Admin JWT payload:', decoded);
-      } else {
-        // eslint-disable-next-line no-console
-        console.log('Admin login failed, token:', loginRes.body);
-      }
       // Registrace běžného uživatele
       const userRes = await request(app)
         .post('/api/users/register')
