@@ -1,3 +1,691 @@
+// Simulace dopadů změn v procesech (change impact analysis)
+router.post('/change-impact-simulation', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:changeimpact')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const changeimpact = require('../scripts/ai_change_impact_simulation');
+    await changeimpact.main();
+    res.json({ ok: true, message: 'AI Change Impact Simulation Report byl vygenerován.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování change impact simulation reportu', detail: e.message });
+  }
+});
+// Predikce slabých míst v procesech na základě audit logů, incidentů a feedbacku
+router.post('/predict-process-weaknesses', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:weakness')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const weakness = require('../scripts/ai_predict_process_weaknesses');
+    await weakness.main();
+    res.json({ ok: true, message: 'AI Process Weakness Prediction Report byl vygenerován.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování weakness prediction reportu', detail: e.message });
+  }
+});
+// Sentiment analýza uživatelské zpětné vazby a incidentů
+router.post('/sentiment-feedback-analysis', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:sentiment')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const sentiment = require('../scripts/ai_sentiment_feedback_analysis');
+    await sentiment.main();
+    res.json({ ok: true, message: 'AI Sentiment Feedback Analysis Report byl vygenerován.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování sentiment analysis reportu', detail: e.message });
+  }
+});
+// Report trendů v adopci inovací a automatizací
+router.post('/innovation-adoption-trends', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:adoption')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const adoption = require('../scripts/ai_innovation_adoption_trends');
+    await adoption.main();
+    res.json({ ok: true, message: 'AI Innovation Adoption Trends Report byl vygenerován.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování adoption trends reportu', detail: e.message });
+  }
+});
+// Compliance report z týmového knowledge base
+router.post('/team-knowledge-base-compliance-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:compliance')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const compliance = require('../scripts/ai_team_knowledge_base_compliance_report');
+    await compliance.main();
+    res.json({ ok: true, message: 'Compliance report z týmového knowledge base byl vygenerován.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování compliance reportu', detail: e.message });
+  }
+});
+// Export týmového knowledge base do SIEM/SOC
+router.post('/team-knowledge-base-siem-export', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:siem')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const siem = require('../scripts/ai_team_knowledge_base_siem_export');
+    await siem.exportToSIEM();
+    res.json({ ok: true, message: 'Týmový knowledge base byl exportován do SIEM/SOC.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při exportu knowledge base do SIEM/SOC', detail: e.message });
+  }
+});
+// Export týmového knowledge base e-mailem vedení/týmu
+router.post('/team-knowledge-base-email', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:email')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const emailer = require('../scripts/ai_team_knowledge_base_email');
+    await emailer.emailKnowledgeBase();
+    res.json({ ok: true, message: 'Týmový knowledge base byl odeslán e-mailem vedení/týmu.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při odesílání knowledge base e-mailem', detail: e.message });
+  }
+});
+// Archivace týmového knowledge base do S3 bucketu
+router.post('/team-knowledge-base-archive', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:archive')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const archiver = require('../scripts/ai_team_knowledge_base_archive');
+    await archiver.archiveKnowledgeBase();
+    res.json({ ok: true, message: 'Týmový knowledge base byl archivován do S3 bucketu.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při archivaci knowledge base', detail: e.message });
+  }
+});
+// Export týmového knowledge base do PDF/Markdown
+router.post('/team-knowledge-base-export', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const exporter = require('../scripts/ai_team_knowledge_base_export');
+    await exporter.exportKnowledgeBase();
+    res.json({ ok: true, message: 'Týmový knowledge base byl exportován do PDF/Markdown.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při exportu knowledge base', detail: e.message });
+  }
+});
+// AI kontinuální improvement roadmapa pro tým
+router.post('/continuous-improvement-roadmap', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:improvement')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const roadmap = require('../scripts/ai_continuous_improvement_roadmap');
+    await roadmap.main();
+    res.json({ ok: true, message: 'AI Continuous Improvement Roadmap byla úspěšně vygenerována. Výsledek je uložen v reports/ai_continuous_improvement_roadmap-<datum>.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování improvement roadmapy', detail: e.message });
+  }
+});
+// AI executive summary pro vedení
+router.post('/executive-summary-generator', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:executive')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const exec = require('../scripts/ai_executive_summary_generator');
+    await exec.main();
+    res.json({ ok: true, message: 'AI Executive Summary Generator byl úspěšně proveden. Výsledek je uložen v reports/ai_executive_summary_generator-<datum>.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování executive summary', detail: e.message });
+  }
+});
+// AI kvartální retrospektiva & lessons learned pro tým
+router.post('/retrospective-generator', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:retrospective')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const retro = require('../scripts/ai_retrospective_generator');
+    await retro.main();
+    res.json({ ok: true, message: 'AI Retrospective Generator byl úspěšně proveden. Výsledek je uložen v reports/ai_retrospective_generator-<datum>.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování retrospektivy', detail: e.message });
+  }
+});
+// AI generátor micro-workshopů pro tým
+router.post('/micro-workshop-generator', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:workshop')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const workshop = require('../scripts/ai_micro_workshop_generator');
+    await workshop.main();
+    res.json({ ok: true, message: 'AI Micro-Workshop Generator byl úspěšně proveden. Výsledek je uložen v reports/ai_micro_workshop_generator-<datum>.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování micro-workshopů', detail: e.message });
+  }
+});
+// AI personalizovaný mentoringový plán pro tým
+router.post('/personalized-mentoring-plan', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:mentor')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const mentor = require('../scripts/ai_personalized_mentoring_plan');
+    await mentor.main();
+    res.json({ ok: true, message: 'AI Personalized Mentoring Plan byl úspěšně vygenerován. Výsledek je uložen v reports/ai_personalized_mentoring_plan-<datum>.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování mentoringového plánu', detail: e.message });
+  }
+});
+// AI gamifikace sdílení znalostí v týmu
+router.post('/gamified-knowledge-sharing', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:gamify')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const gamify = require('../scripts/ai_gamified_knowledge_sharing');
+    await gamify.main();
+    res.json({ ok: true, message: 'AI Gamified Knowledge Sharing byl úspěšně proveden. Výsledek je uložen v reports/ai_gamified_knowledge_sharing-<datum>.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při gamifikaci sdílení znalostí', detail: e.message });
+  }
+});
+// AI healthcheck & anomaly detection na backend API
+router.post('/healthcheck', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:healthcheck')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const healthcheck = require('../scripts/ai_healthcheck');
+    await healthcheck.main();
+    res.json({ ok: true, message: 'AI Healthcheck byl úspěšně proveden. Výsledek je uložen v reports/ai-healthcheck-report.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při AI healthchecku', detail: e.message });
+  }
+});
+// What-if simulace dopadů neřešených slabin/backlogu
+router.post('/whatif-simulation', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:simulate')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const whatif = require('../scripts/ai_whatif_simulation');
+    await whatif.main();
+    res.json({ ok: true, message: 'What-if simulace byla úspěšně provedena. Výsledek je uložen v reports/ai_whatif_simulation.md.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při what-if simulaci', detail: e.message });
+  }
+});
+// Eskalace nerealizovaných AI doporučení (Notion backlog) vedení
+router.post('/escalate-unrealized-recommendations', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:escalate')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const escalate = require('../scripts/ai_escalate_unrealized_recommendations');
+    await escalate.main();
+    res.json({ ok: true, message: 'Eskalace nerealizovaných doporučení proběhla.' });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při eskalaci nerealizovaných doporučení', detail: e.message });
+  }
+});
+// AI-driven onboarding executive summary
+router.get('/onboarding-executive-summary', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { generateExecutiveSummary } = require('../scripts/ai_onboarding_executive_summary');
+    const summary = generateExecutiveSummary();
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(summary);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování executive summary', detail: e.message });
+  }
+});
+// AI-driven onboarding compliance check
+router.get('/onboarding-compliance-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { getComplianceReport } = require('../scripts/ai_onboarding_compliance_check');
+    const report = getComplianceReport();
+    res.json(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při získávání compliance reportu', detail: e.message });
+  }
+});
+// AI-driven onboarding audit log
+router.get('/onboarding-audit-log', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { getAuditLog } = require('../scripts/ai_onboarding_audit_log');
+    const log = getAuditLog();
+    res.json(log);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při získávání audit logu', detail: e.message });
+  }
+});
+// AI-driven onboarding knowledge base
+router.get('/onboarding-knowledge-base', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { generateKnowledgeBase } = require('../scripts/ai_onboarding_knowledge_base');
+    const kb = generateKnowledgeBase();
+    res.json(kb);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování knowledge base', detail: e.message });
+  }
+});
+// AI-driven onboarding continuous improvement: roadmapa inovací
+router.get('/onboarding-improvement-roadmap', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { generateRoadmap } = require('../scripts/ai_onboarding_improvement_roadmap');
+    const roadmap = generateRoadmap();
+    res.json(roadmap);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování roadmapy inovací', detail: e.message });
+  }
+});
+// AI-driven onboarding incident management: detekce, reporting, řešení
+router.get('/onboarding-incidents', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { detectIncidents } = require('../scripts/ai_onboarding_incident_management');
+    const report = detectIncidents();
+    res.json(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při získávání incident reportu', detail: e.message });
+  }
+});
+// AI healthcheck onboarding procesu: stav, rizika, urgentní doporučení
+router.get('/onboarding-healthcheck', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { getHealthcheck } = require('../scripts/ai_onboarding_healthcheck');
+    const health = getHealthcheck();
+    res.json(health);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při získávání healthchecku', detail: e.message });
+  }
+});
+// Onboarding gamifikace: body, žebříček, motivace
+router.get('/onboarding-gamification', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { getGamificationStatus } = require('../scripts/ai_onboarding_gamification');
+    const status = getGamificationStatus(user);
+    res.json(status);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při získávání gamifikace', detail: e.message });
+  }
+});
+// AI-driven onboarding mentoring: přiřazení mentora, doporučení, pokrok
+router.get('/onboarding-mentoring', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { assignMentor } = require('../scripts/ai_onboarding_mentoring');
+    const mentoring = assignMentor(user);
+    res.json(mentoring);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování mentoring informací', detail: e.message });
+  }
+});
+// Personalizovaná onboarding doporučení pro uživatele
+router.get('/onboarding-personal-recommendations', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { generatePersonalRecommendations } = require('../scripts/ai_onboarding_personal_recommendations');
+    const status = await generatePersonalRecommendations(user);
+    res.json(status);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování personalizovaných doporučení', detail: e.message });
+  }
+});
+// AI generování best practices pro onboarding proces
+router.get('/onboarding-best-practices', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { generateBestPractices } = require('../scripts/ai_onboarding_best_practices');
+    const practices = generateBestPractices();
+    res.json(practices);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování best practices', detail: e.message });
+  }
+});
+// AI predikce budoucích slabin onboarding procesu
+router.get('/onboarding-predict-weaknesses', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { predictWeaknesses } = require('../scripts/ai_onboarding_predict_weaknesses');
+    const prediction = predictWeaknesses();
+    res.json(prediction);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při AI predikci slabin', detail: e.message });
+  }
+});
+// Reporting stavu plnění akčních kroků z retrospektiv
+router.get('/onboarding-actions-status', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { getActionsStatus } = require('../scripts/ai_onboarding_actions_status');
+    const status = getActionsStatus();
+    res.json(status);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při reportingu stavu akčních kroků', detail: e.message });
+  }
+});
+// Onboarding retrospektiva (AI shrnutí a akční kroky)
+router.get('/onboarding-retrospective', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { generateRetrospective } = require('../scripts/ai_onboarding_retrospective');
+    const summary = generateRetrospective();
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(summary);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování retrospektivy', detail: e.message });
+  }
+});
+// Archivace onboarding reportu do S3 a rozeslání e-mailem
+router.post('/onboarding-report-archive', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { archiveReport } = require('../scripts/archive_onboarding_report');
+    const result = archiveReport();
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při archivaci onboarding reportu', detail: e.message });
+  }
+});
+// Export onboarding reportu do Markdown
+router.get('/onboarding-report-export', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { exportMarkdown } = require('../scripts/export_onboarding_report');
+    const filePath = exportMarkdown();
+    res.download(filePath, 'onboarding_report-latest.md');
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při exportu onboarding reportu', detail: e.message });
+  }
+});
+// Reporting dopadu onboarding zlepšení
+router.get('/onboarding-impact', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { analyzeImpact } = require('../scripts/ai_onboarding_impact');
+    const report = analyzeImpact();
+    res.json(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při analýze dopadu onboardingu', detail: e.message });
+  }
+});
+
+// AI export data report: reporting nad exporty dat
+router.get('/export-data-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_export_data_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_export_data_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování export data reportu', detail: e.message });
+  }
+});
+
+// AI rights change report: reporting nad změnami práv
+router.get('/rights-change-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_rights_change_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_rights_change_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování rights change reportu', detail: e.message });
+  }
+});
+
+// AI action tracking report: reporting plnění akčních kroků
+router.get('/action-tracking-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_action_tracking_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_action_tracking_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování action tracking reportu', detail: e.message });
+  }
+});
+
+// AI disaster recovery report: reporting stavu obnovy záloh a resilience
+router.get('/disaster-recovery-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_disaster_recovery_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_disaster_recovery_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování disaster recovery reportu', detail: e.message });
+  }
+});
+
+// AI lessons learned report: shrnutí lessons learned, trendů a doporučení
+router.get('/lessons-learned-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_lessons_learned_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_lessons_learned_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování lessons learned reportu', detail: e.message });
+  }
+});
+
+// AI best practices report: shrnutí best practices, inovací a doporučení
+router.get('/best-practices-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_best_practices_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_best_practices_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování best practices reportu', detail: e.message });
+  }
+});
+
+// AI innovation trends report: shrnutí trendů v inovacích, AI, bezpečnosti a governance
+router.get('/innovation-trends-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_innovation_trends_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_innovation_trends_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování innovation trends reportu', detail: e.message });
+  }
+});
+
+// AI team knowledge base report: shrnutí znalostí, best practices, lessons learned a inovací pro tým
+router.get('/team-knowledge-base-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { main } = require('../scripts/ai_team_knowledge_base_report');
+    await main();
+    const fs = require('fs');
+    const path = require('path');
+    const REPORTS_DIR = path.join(__dirname, '../reports');
+    const files = fs.readdirSync(REPORTS_DIR).filter(f => f.startsWith('ai_team_knowledge_base_report-')).sort().reverse();
+    const report = files.length ? fs.readFileSync(path.join(REPORTS_DIR, files[0]), 'utf-8') : 'Report není dostupný.';
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování team knowledge base reportu', detail: e.message });
+  }
+});
+// Automatická eskalace slabin onboarding procesu
+router.post('/onboarding-escalate', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:escalate')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { escalate } = require('../scripts/ai_onboarding_escalate');
+    const result = escalate();
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při eskalaci slabin onboardingu', detail: e.message });
+  }
+});
+// Reporting trendů a doporučení z onboarding procesu
+router.get('/onboarding-trends', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { analyzeTrends } = require('../scripts/ai_onboarding_trends');
+    const report = analyzeTrends();
+    res.json(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při analýze onboarding trendů', detail: e.message });
+  }
+});
 // Příjem onboarding zpětné vazby od uživatele
 router.post('/onboarding-feedback', async (req, res) => {
   try {
@@ -842,6 +1530,20 @@ router.get('/audit-log', adminOnly, adminRole(['superadmin','approver']), async 
 });
 // --- SPRÁVA ADMINŮ A ROLÍ ---
 // ...existing code...
+// Enforcement: seznam adminů bez aktivního 2FA
+router.get('/enforce-admin-2fa', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('admin:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const User = require('../models/User');
+    const admins = await User.find({ role: 'admin', twoFactorEnabled: false }).lean();
+    res.json({ missing2FA: admins.map(u => ({ email: u.email, name: u.name })) });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při enforcementu 2FA', detail: e.message });
+  }
+});
 // ...existing code...
 
 // GET /admins?role=admin|client|mechanic|all

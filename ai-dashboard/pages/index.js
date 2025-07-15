@@ -1,3 +1,111 @@
+import ChangeImpactSimulation from '../components/ChangeImpactSimulation';
+        <ChangeImpactSimulation />
+import ProcessWeaknessPrediction from '../components/ProcessWeaknessPrediction';
+        <ProcessWeaknessPrediction />
+import SentimentFeedbackAnalysis from '../components/SentimentFeedbackAnalysis';
+        <SentimentFeedbackAnalysis />
+import InnovationAdoptionTrends from '../components/InnovationAdoptionTrends';
+        <InnovationAdoptionTrends />
+import TeamKnowledgeBaseComplianceReport from '../components/TeamKnowledgeBaseComplianceReport';
+        <TeamKnowledgeBaseComplianceReport />
+import TeamKnowledgeBaseSIEMExport from '../components/TeamKnowledgeBaseSIEMExport';
+        <TeamKnowledgeBaseSIEMExport />
+import TeamKnowledgeBaseEmail from '../components/TeamKnowledgeBaseEmail';
+        <TeamKnowledgeBaseEmail />
+import TeamKnowledgeBaseArchive from '../components/TeamKnowledgeBaseArchive';
+        <TeamKnowledgeBaseArchive />
+import TeamKnowledgeBaseExport from '../components/TeamKnowledgeBaseExport';
+        <TeamKnowledgeBaseExport />
+import ContinuousImprovementRoadmap from '../components/ContinuousImprovementRoadmap';
+        <ContinuousImprovementRoadmap />
+import ExecutiveSummaryGenerator from '../components/ExecutiveSummaryGenerator';
+        <ExecutiveSummaryGenerator />
+import RetrospectiveGenerator from '../components/RetrospectiveGenerator';
+        <RetrospectiveGenerator />
+import MicroWorkshopGenerator from '../components/MicroWorkshopGenerator';
+        <MicroWorkshopGenerator />
+import PersonalizedMentoringPlan from '../components/PersonalizedMentoringPlan';
+        <PersonalizedMentoringPlan />
+import GamifiedKnowledgeSharing from '../components/GamifiedKnowledgeSharing';
+        <GamifiedKnowledgeSharing />
+import Healthcheck from '../components/Healthcheck';
+        <Healthcheck />
+import WhatIfSimulation from '../components/WhatIfSimulation';
+        <WhatIfSimulation />
+import EscalateUnrealizedRecommendations from '../components/EscalateUnrealizedRecommendations';
+        <EscalateUnrealizedRecommendations />
+import OnboardingComplianceReport from '../components/OnboardingComplianceReport';
+        <div className="bg-green-100 dark:bg-green-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingComplianceReport />
+        </div>
+import OnboardingAuditLog from '../components/OnboardingAuditLog';
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+          <OnboardingAuditLog />
+        </div>
+import OnboardingKnowledgeBase from '../components/OnboardingKnowledgeBase';
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingKnowledgeBase />
+        </div>
+import OnboardingImprovementRoadmap from '../components/OnboardingImprovementRoadmap';
+        <div className="bg-blue-50 dark:bg-blue-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingImprovementRoadmap />
+        </div>
+import OnboardingIncidentManagement from '../components/OnboardingIncidentManagement';
+        <div className="bg-red-100 dark:bg-red-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingIncidentManagement />
+        </div>
+import OnboardingHealthcheck from '../components/OnboardingHealthcheck';
+        <div className="mb-6">
+          <OnboardingHealthcheck />
+        </div>
+import OnboardingGamification from '../components/OnboardingGamification';
+        <div className="bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingGamification />
+        </div>
+import OnboardingMentoring from '../components/OnboardingMentoring';
+        <div className="bg-violet-50 dark:bg-violet-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingMentoring />
+        </div>
+import OnboardingPersonalRecommendations from '../components/OnboardingPersonalRecommendations';
+        <div className="bg-cyan-50 dark:bg-cyan-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingPersonalRecommendations />
+        </div>
+import OnboardingBestPractices from '../components/OnboardingBestPractices';
+        <div className="bg-lime-50 dark:bg-lime-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingBestPractices />
+        </div>
+import OnboardingWeaknessPrediction from '../components/OnboardingWeaknessPrediction';
+        <div className="bg-pink-50 dark:bg-pink-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingWeaknessPrediction />
+        </div>
+import OnboardingActionsStatus from '../components/OnboardingActionsStatus';
+        <div className="bg-orange-50 dark:bg-orange-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingActionsStatus />
+        </div>
+import OnboardingRetrospective from '../components/OnboardingRetrospective';
+        <div className="bg-purple-50 dark:bg-purple-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingRetrospective />
+        </div>
+import OnboardingReportArchive from '../components/OnboardingReportArchive';
+        <div className="bg-indigo-50 dark:bg-indigo-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingReportArchive />
+        </div>
+import OnboardingReportExport from '../components/OnboardingReportExport';
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+          <OnboardingReportExport />
+        </div>
+import OnboardingImpactReport from '../components/OnboardingImpactReport';
+        <div className="bg-teal-50 dark:bg-teal-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingImpactReport />
+        </div>
+import OnboardingEscalationStatus from '../components/OnboardingEscalationStatus';
+        <div className="bg-red-50 dark:bg-red-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingEscalationStatus />
+        </div>
+import OnboardingTrendsReport from '../components/OnboardingTrendsReport';
+        <div className="bg-yellow-50 dark:bg-yellow-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingTrendsReport />
+        </div>
 import OnboardingFeedbackForm from '../components/OnboardingFeedbackForm';
         <div className="bg-green-50 dark:bg-green-900 rounded-lg shadow p-4 mb-6">
           <OnboardingFeedbackForm />
@@ -7,7 +115,17 @@ import OnboardingChecklist from '../components/OnboardingChecklist';
           <OnboardingChecklist />
         </div>
 import ExecutiveSummary from '../components/ExecutiveSummary';
+import OnboardingExecutiveSummary from '../components/OnboardingExecutiveSummary';
+import Admin2FAEnforcement from '../components/Admin2FAEnforcement';
 import UnrealizedImpact from '../components/UnrealizedImpact';
+import ExportDataReport from '../components/ExportDataReport';
+import RightsChangeReport from '../components/RightsChangeReport';
+import ActionTrackingReport from '../components/ActionTrackingReport';
+import DisasterRecoveryReport from '../components/DisasterRecoveryReport';
+import LessonsLearnedReport from '../components/LessonsLearnedReport';
+import BestPracticesReport from '../components/BestPracticesReport';
+import InnovationTrendsReport from '../components/InnovationTrendsReport';
+import TeamKnowledgeBaseReport from '../components/TeamKnowledgeBaseReport';
 import NotionTrendsChart from '../components/NotionTrendsChart';
 import NotionTasksReport from '../components/NotionTasksReport';
 import NotionSyncButton from '../components/NotionSyncButton';
@@ -97,6 +215,46 @@ import LastEscalationStatus from '../components/LastEscalationStatus';
 
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
           <ReportsList />
+        </div>
+
+        <div className="bg-red-100 dark:bg-red-900 rounded-lg shadow p-4 mb-6">
+          <Admin2FAEnforcement />
+        </div>
+
+        <div className="bg-blue-100 dark:bg-blue-900 rounded-lg shadow p-4 mb-6">
+          <OnboardingExecutiveSummary />
+        </div>
+
+        <div className="bg-orange-100 dark:bg-orange-900 rounded-lg shadow p-4 mb-6">
+          <ExportDataReport />
+        </div>
+
+        <div className="bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow p-4 mb-6">
+          <RightsChangeReport />
+        </div>
+
+        <div className="bg-green-100 dark:bg-green-900 rounded-lg shadow p-4 mb-6">
+          <ActionTrackingReport />
+        </div>
+
+        <div className="bg-blue-200 dark:bg-blue-900 rounded-lg shadow p-4 mb-6">
+          <DisasterRecoveryReport />
+        </div>
+
+        <div className="bg-purple-100 dark:bg-purple-900 rounded-lg shadow p-4 mb-6">
+          <LessonsLearnedReport />
+        </div>
+
+        <div className="bg-lime-100 dark:bg-lime-900 rounded-lg shadow p-4 mb-6">
+          <BestPracticesReport />
+        </div>
+
+        <div className="bg-cyan-100 dark:bg-cyan-900 rounded-lg shadow p-4 mb-6">
+          <InnovationTrendsReport />
+        </div>
+
+        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg shadow p-4 mb-6">
+          <TeamKnowledgeBaseReport />
         </div>
 
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow p-4 mb-6">

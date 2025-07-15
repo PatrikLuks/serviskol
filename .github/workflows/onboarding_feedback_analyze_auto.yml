@@ -1,0 +1,21 @@
+name: Onboarding Feedback Analyze Auto
+on:
+  schedule:
+    - cron: '0 11 * * 1'
+  workflow_dispatch:
+jobs:
+  onboarding-feedback-analyze-auto:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Run onboarding feedback analysis workflow
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node backend/scripts/ai_onboarding_feedback_analyze_auto.js

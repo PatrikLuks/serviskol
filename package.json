@@ -28,6 +28,7 @@
     "html2canvas": "^1.4.1",
     "json2csv": "^6.0.0-alpha.2",
     "jspdf": "^3.0.1",
+    "markdown-pdf": "^11.0.0",
     "multer": "^2.0.1",
     "nodemailer": "^7.0.5",
     "pdfkit": "^0.17.1",
