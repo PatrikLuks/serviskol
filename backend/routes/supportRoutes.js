@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { auditLog } = require('../middleware/auditLog');
+const { captureEvent } = require('../utils/posthog');
 const { auth } = require('../middleware/auth');
 
 // POST /api/support/ticket
@@ -9,6 +10,7 @@ router.post('/ticket', auth, async (req, res) => {
   if (!message) return res.status(400).json({ error: 'Chybí zpráva.' });
   const user = req.user;
   auditLog('Podpora - nový ticket', user, { message, aiMessageId });
+  captureEvent(user._id?.toString() || user.id, 'support_ticket_created', { message, aiMessageId });
   res.json({ success: true, msg: 'Váš požadavek byl přijat. Ozveme se vám co nejdříve.' });
   // TODO: Integrace s ticketovacím systémem nebo e-mail notifikace
 });
@@ -22,6 +24,8 @@ router.post('/close-ticket', auth, async (req, res) => {
   }
   const user = req.user;
   auditLog('Podpora - ticket uzavřen', user, { ticketId, satisfaction, comment });
+  const { captureEvent } = require('../utils/posthog');
+  captureEvent(user._id?.toString() || user.id, 'support_ticket_closed', { ticketId, satisfaction, comment });
   // Pokud není zadáno hodnocení, pošleme follow-up e-mail
   if (typeof satisfaction !== 'number' && user.email) {
     try {

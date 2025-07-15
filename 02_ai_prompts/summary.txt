@@ -1,0 +1,1 @@
+Shrň hlavní body plánu ServisKol a navrhni další postup. Zaměř se na priority, rychlé výhry, MVP a doporuč další kroky pro dlouhodobý rozvoj, včetně iterací na základě zpětné vazby uživatelů a testování.

@@ -1,0 +1,44 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Start backend
+        run: |
+          cd ../backend
+          npm ci
+          nohup npm start &
+          sleep 10
+        working-directory: ./frontend
+      - name: Start frontend
+        run: |
+          nohup npm run dev &
+          sleep 10
+      - name: Run Cypress tests
+        run: npx cypress run
+      - name: Upload Cypress videos (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: frontend/cypress/videos
+      - name: Upload Cypress screenshots (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots

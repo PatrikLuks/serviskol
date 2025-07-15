@@ -1,0 +1,17 @@
+name: Provozní retrospektiva
+
+on:
+  schedule:
+    - cron: '0 8 1 * *' # První den v měsíci v 8:00
+  workflow_dispatch:
+
+jobs:
+  remind-retrospective:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Připomenutí provozní retrospektivy
+        run: |
+          echo "Je čas na měsíční provozní retrospektivu!"
+          echo "Zkontrolujte incidenty, post-mortem reporty a trendy z AI skriptů."
+          echo "Použijte šablonu retrospektivy v retrospectives/RETROSPECTIVE_TEMPLATE.md."
+          echo "Po retrospektivě aktualizujte checklisty a dokumentaci dle akčních kroků."

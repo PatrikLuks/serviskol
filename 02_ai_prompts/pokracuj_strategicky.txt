@@ -1,0 +1,1 @@
+Pokračuj ve strategické práci na aplikaci ServisKol. Navrhni další kroky, rozveď předchozí body, případně navrhni alternativní řešení nebo vylepšení. Zaměř se na MVP, rychlé výhry, iterativní rozvoj a zpětnou vazbu od uživatelů.

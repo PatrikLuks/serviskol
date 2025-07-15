@@ -1,0 +1,11 @@
+{
+  "Strategicky": {
+    "prefix": "strategicky",
+    "body": [
+      "Pracuj strategicky podle plánu z ${1:00_plan.txt}. Zaměř se na dosažení cíle.",
+      "Cíl: ${2:specifikuj...}",
+      "Výstup: ${3:podrobný text/kód/struktura}"
+    ],
+    "description": "Prompt pro strategické plánování"
+  }
+}

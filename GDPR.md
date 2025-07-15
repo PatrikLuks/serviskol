@@ -17,4 +17,4 @@
 - Všechny akce logujte do audit logu
 
 ---
-Tento soubor aktualizujte dle provozních zkušeností a legislativy.
+> **Poznámka:** Pravidelně ověřujte a aktualizujte tento dokument dle platné legislativy a provozních zkušeností.

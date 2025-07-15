@@ -1,0 +1,1 @@
+Rozděl projekt ServisKol na logické fáze. U každé fáze popiš hlavní cíle, klíčové úkoly, očekávané výstupy a závislosti. Zohledni onboarding, základní funkce (přihlášení, správa kol, servisní workflow, chat, věrnostní program), AI asistenci, gamifikaci, analytiku, bezpečnost a škálování. Navrhni pořadí implementace pro MVP a další rozvoj.

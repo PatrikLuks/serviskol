@@ -6,7 +6,8 @@
     "start": "node server.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint . --ext .js"
+    "lint": "eslint . --ext .js",
+    "loadtest": "k6 run tests/loadtest.k6.js"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",

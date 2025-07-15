@@ -28,4 +28,4 @@
 - [ ] Sledovat a vyhodnocovat růst komunity (analytika, engagement)
 
 ---
-Tento checklist pravidelně aktualizujte dle zkušeností a potřeb komunity.
+> **Poznámka:** Tento checklist pravidelně aktualizujte dle zkušeností a potřeb komunity.

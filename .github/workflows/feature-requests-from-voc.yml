@@ -1,0 +1,28 @@
+name: Feature Requests from Voice of Customer
+
+on:
+  schedule:
+    - cron: '30 3 * * *' # Každý den ve 3:30 ráno
+  workflow_dispatch:
+
+jobs:
+  create-feature-requests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run create_feature_requests_from_voc.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO_NAME: serviskol
+        run: node scripts/create_feature_requests_from_voc.js

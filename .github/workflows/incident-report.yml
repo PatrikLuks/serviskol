@@ -1,0 +1,36 @@
+name: Incident & Trend Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' # každý den v 6:00 UTC
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate incident & trend report
+        run: node scripts/generate_incident_report.js
+      - name: Generate AI incident insight (pokud je API klíč)
+        if: env.OPENAI_API_KEY != ''
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai_incident_insight.js
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: incident-report
+          path: |
+            backend/reports/incident_report-*.md
+            backend/reports/ai_insight-*.md

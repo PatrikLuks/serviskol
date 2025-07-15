@@ -1,3 +1,7 @@
+const logUnauthorizedRoutes = require('./routes/logUnauthorizedRoutes');
+app.use('/api/admin', logUnauthorizedRoutes);
+const aiSecurityAnalysisRoutes = require('./routes/aiSecurityAnalysisRoutes');
+app.use('/api/admin', aiSecurityAnalysisRoutes);
 // ...existing code...
 const express = require('express');
 const connectDB = require('./config/db');
@@ -57,6 +61,7 @@ const biRoutes = require('./routes/biRoutes');
 const reportSettingRoutes = require('./routes/reportSettingRoutes');
 const clickRoutes = require('./routes/clickRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const securityAuditRoutes = require('./routes/securityAuditRoutes');
 const followupMetricsRoutes = require('./routes/followupMetrics');
 
 app.use('/api/bi/alerts', biAlertsRoutes);
@@ -76,6 +81,7 @@ app.use('/api/bi', biRoutes);
 app.use('/api/admin/report-settings', reportSettingRoutes);
 app.use('/api/click', clickRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', securityAuditRoutes);
 app.use('/api/admin', followupMetricsRoutes);
 // ...odstraněno duplicitní deklarace...
 

@@ -1,4 +1,5 @@
 // Export výsledků A/B testů follow-upů do CSV
+const { captureEvent } = require('../utils/posthog');
 const express = require('express');
 const router = express.Router();
 const { Parser } = require('json2csv');
@@ -27,6 +28,12 @@ router.get('/ab-followup-results/export-csv', async (req, res) => {
       });
     });
   });
+  // Logování exportu do PostHog
+  if (req.user) {
+    captureEvent(req.user._id?.toString() || req.user.id, 'export_ab_followup_results', {
+      role, region, ageGroup, channel, count: campaigns.length
+    });
+  }
   const parser = new Parser();
   const csv = parser.parse(rows);
   res.header('Content-Type', 'text/csv');

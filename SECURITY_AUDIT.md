@@ -39,5 +39,11 @@
 - [ ] Pravidelné testy obnovy záloh
 - [ ] Simulace výpadku a obnovy systému
 
+Tento checklist pravidelně aktualizujte dle provozních zkušeností, incidentů a nových trendů v bezpečnosti.
+
 ---
-Tento checklist pravidelně aktualizujte dle provozních zkušeností a doporučení.
+
+## Inovace a trendy
+- [ ] Pravidelně sledujte nové trendy v oblasti bezpečnosti, AI a compliance
+- [ ] Zvažte zavedení nových nástrojů a technologií dle potřeb projektu
+- [ ] Sdílejte inovace a zkušenosti v týmu

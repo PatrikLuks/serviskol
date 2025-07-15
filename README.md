@@ -7,6 +7,22 @@
 
 ---
 
+
+## Monitoring, alerting a strategické checklisty
+
+- **Monitoring & Alerting**: Kompletní pokrytí backendu i frontendu (Prometheus, Sentry, Alertmanager, CI testy)
+- **Výkonnostní testy**: Load test backendu pomocí k6 (`backend/tests/loadtest.k6.js`, `npm run loadtest`)
+- **Asset audit**: Analýza velikosti bundle pomocí `rollup-plugin-visualizer` (`frontend/vite.config.js`)
+- **Checklisty**: Pravidelný audit monitoringu, alertingu, výkonu a assetů (`MONITORING_ALERTING_AUDIT_CHECKLIST.md`, `PERFORMANCE_ASSET_AUDIT_CHECKLIST.md`)
+- **Onboarding**: Aktuální onboarding a provozní dokumentace v `ONBOARDING_CHECKLIST.md`, `MONITORING_ALERTING_README.md`, `PERFORMANCE_ASSET_AUDIT_CHECKLIST.md`
+
+### Rychlé odkazy
+- [Monitoring & Alerting README](MONITORING_ALERTING_README.md)
+- [Výkonnostní a asset audit checklist](PERFORMANCE_ASSET_AUDIT_CHECKLIST.md)
+- [Onboarding checklist](ONBOARDING_CHECKLIST.md)
+
+---
+
 ## Rychlý start: Spuštění celé aplikace ServisKol
 
 ## Spuštění v Dockeru

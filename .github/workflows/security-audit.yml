@@ -1,0 +1,38 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * 1' # každé pondělí ve 2:00
+
+jobs:
+  npm-audit-backend:
+    name: NPM Audit (backend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
+
+  npm-audit-frontend:
+    name: NPM Audit (frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
+
+# Pro pokročilejší audit lze přidat Snyk nebo další nástroje.

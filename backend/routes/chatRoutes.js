@@ -4,6 +4,7 @@ const { auth } = require('../middleware/auth');
 const Message = require('../models/Message');
 const { createNotification } = require('../utils/notificationUtils');
 const { sendPushNotification } = require('../utils/pushUtils');
+const { captureEvent } = require('../utils/posthog');
 
 // GET /api/chat/:bikeId - načtení historie zpráv ke kolu
 router.get('/:bikeId', auth, async (req, res) => {
@@ -24,6 +25,7 @@ router.post('/:bikeId', auth, async (req, res) => {
     if (!text) return res.status(400).json({ msg: 'Zpráva nesmí být prázdná.' });
     const message = new Message({ bikeId, userId: req.user.id, text });
     await message.save();
+    captureEvent(req.user._id?.toString() || req.user.id, 'chat_message_sent', { bikeId, text });
     // Notifikace pro příjemce (pokud chat je mezi dvěma uživateli)
     if (req.user.role === 'client' && bikeId) {
       const bike = await require('../models/Bike').findById(bikeId);
@@ -51,6 +53,7 @@ router.post('/:bikeId', auth, async (req, res) => {
     }
     res.status(201).json(message);
   } catch (err) {
+    captureEvent(req.user._id?.toString() || req.user.id, 'chat_message_error', { bikeId, error: err.message });
     res.status(500).json({ msg: 'Chyba serveru.' });
   }
 });

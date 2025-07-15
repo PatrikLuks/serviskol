@@ -28,10 +28,19 @@
   - [ ] Pokud Cypress není nainstalován: `npx cypress install`
   - [ ] Problémy? Viz README sekce e2e testy a troubleshooting
 
+
 ### 3. Onboarding administrátorů a techniků
 - [ ] Speciální onboarding pro adminy/techniky (práva, audit logy, reporting)
 - [ ] Ukázka správy kol, servisních zakázek, notifikací
 - [ ] Odkaz na bezpečnostní a reporting checklisty
+
+---
+
+### 4. Provozní retrospektivy, inovace a zlepšování
+- [ ] Pravidelně (např. 1× měsíčně) pořádat provozní retrospektivu – analyzovat incidenty, post-mortem reporty a navrhovat zlepšení
+- [ ] Pravidelně aktualizovat šablony, checklisty a dokumentaci dle nových poznatků a incidentů
+- [ ] Sledovat nové trendy v oblasti observability, AI a bezpečnosti a zavádět inovace do provozu
+- [ ] Sdílet poznatky a best practices v týmu (workshopy, micro-workshopy, týmový chat)
 
 ---
 Tento checklist pravidelně aktualizujte dle zkušeností a zpětné vazby.

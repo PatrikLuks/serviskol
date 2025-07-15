@@ -28,4 +28,4 @@
 - [ ] Právní a technická příprava pro expanzi (GDPR, platby, podpora)
 
 ---
-Tento checklist pravidelně aktualizujte dle zkušeností a potřeb růstu.
+> **Poznámka:** Tento checklist pravidelně aktualizujte dle zkušeností a potřeb růstu.

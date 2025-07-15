@@ -1,0 +1,26 @@
+name: AI Risk Predictor
+
+on:
+  schedule:
+    - cron: '0 5 * * 1' # Každé pondělí v 5:00
+  workflow_dispatch:
+
+jobs:
+  ai-risk-predictor:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ai_risk_predictor.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai_risk_predictor.js

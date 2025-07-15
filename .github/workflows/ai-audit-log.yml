@@ -1,0 +1,24 @@
+name: AI Audit Log
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Každé pondělí v 6:00
+  workflow_dispatch:
+
+jobs:
+  ai-audit-log:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ai_audit_log.js
+        run: node scripts/ai_audit_log.js

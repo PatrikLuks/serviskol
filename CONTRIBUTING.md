@@ -25,3 +25,5 @@ Děkujeme, že chcete přispět! Dodržujte prosím následující postup:
 - Pište srozumitelné commity a popisy PR.
 
 Děkujeme za spolupráci!
+
+> **Poznámka:** Pravidelně aktualizujte tento dokument dle změn v procesu přispívání a CI/CD.

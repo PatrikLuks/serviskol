@@ -1,5 +1,443 @@
+// Příjem onboarding zpětné vazby od uživatele
+router.post('/onboarding-feedback', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:feedback')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const feedback = req.body.feedback;
+    if (!feedback || typeof feedback !== 'string') {
+      return res.status(400).json({ error: 'Chybí text zpětné vazby' });
+    }
+    // Uložení feedbacku do souboru (pro jednoduchost)
+    const fs = require('fs');
+    const path = require('path');
+    const feedbackPath = path.join(__dirname, '../logs/onboarding_feedback.log');
+    fs.appendFileSync(feedbackPath, `[${new Date().toISOString()}] ${user.email || user.id}: ${feedback}\n`);
+    // Spuštění AI analýzy feedbacku (asynchronně)
+    require('../scripts/ai_onboarding_feedback_analyze').analyze(feedback, user);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při ukládání onboarding feedbacku', detail: e.message });
+  }
+});
+// Generování personalizovaného onboarding checklistu
+router.get('/onboarding-checklist', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('onboarding:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { generateChecklist } = require('../scripts/ai_onboarding_checklist');
+    const checklist = await generateChecklist(user);
+    res.json(checklist);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování onboarding checklistu', detail: e.message });
+  }
+});
+// AI predikce dopadu nerealizovaných doporučení (Notion úkolů)
+router.get('/unrealized-impact', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const predict = require('../scripts/ai_predict_unrealized_impact');
+    const impact = await predict.main();
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(impact);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při AI predikci dopadu nerealizovaných doporučení', detail: e.message });
+  }
+});
+// Trendová analýza Notion úkolů (AI recommendations/lessons learned)
+router.get('/notion-tasks-trends', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const trends = require('../scripts/notion_tasks_trends');
+    const data = await trends.main();
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při načítání trendů Notion úkolů', detail: e.message });
+  }
+});
+// Reporting stavu Notion úkolů (AI recommendations/lessons learned)
+router.get('/notion-tasks-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const report = require('../scripts/notion_tasks_report');
+    const tasks = await report.main();
+    res.json(tasks);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při reportingu Notion úkolů', detail: e.message });
+  }
+});
+// Spuštění synchronizace doporučení do Notion
+router.post('/notion-sync', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const syncNotion = require('../scripts/create_notion_tasks_from_ai');
+    await syncNotion.main();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při synchronizaci do Notion', detail: e.message });
+  }
+});
+// Uzavření GitHub Issue (schválení doporučení)
+router.post('/github-issues/close', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:approve')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const { issue_number } = req.body;
+    if (!issue_number) return res.status(400).json({ error: 'Chybí issue_number' });
+    const https = require('https');
+    const OWNER = 'PatrikLuks';
+    const REPO = 'serviskol';
+    const TOKEN = process.env.GITHUB_TOKEN;
+    if (!TOKEN) return res.status(500).json({ error: 'GITHUB_TOKEN není nastaven' });
+    const data = JSON.stringify({ state: 'closed' });
+    const options = {
+      hostname: 'api.github.com',
+      path: `/repos/${OWNER}/${REPO}/issues/${issue_number}`,
+      method: 'PATCH',
+      headers: {
+        'Authorization': `token ${TOKEN}`,
+        'User-Agent': 'serviskol-ai-bot',
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      }
+    };
+    const reqGit = https.request(options, gitRes => {
+      let body = '';
+      gitRes.on('data', chunk => body += chunk);
+      gitRes.on('end', () => {
+        if (gitRes.statusCode >= 200 && gitRes.statusCode < 300) {
+          res.json(JSON.parse(body));
+        } else {
+          res.status(500).json({ error: `GitHub API: ${gitRes.statusCode} ${body}` });
+        }
+      });
+    });
+    reqGit.on('error', err => res.status(500).json({ error: err.message }));
+    reqGit.write(data);
+    reqGit.end();
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při uzavírání GitHub Issue', detail: e.message });
+  }
+});
+// Stav doporučení (GitHub Issues z lessons learned/AI)
+router.get('/github-issues', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const https = require('https');
+    const OWNER = 'PatrikLuks';
+    const REPO = 'serviskol';
+    const TOKEN = process.env.GITHUB_TOKEN;
+    if (!TOKEN) return res.status(500).json({ error: 'GITHUB_TOKEN není nastaven' });
+    const options = {
+      hostname: 'api.github.com',
+      path: `/repos/${OWNER}/${REPO}/issues?state=all&per_page=100`,
+      method: 'GET',
+      headers: {
+        'Authorization': `token ${TOKEN}`,
+        'User-Agent': 'serviskol-ai-bot',
+        'Accept': 'application/vnd.github+json'
+      }
+    };
+    const reqGit = https.request(options, gitRes => {
+      let body = '';
+      gitRes.on('data', chunk => body += chunk);
+      gitRes.on('end', () => {
+        if (gitRes.statusCode >= 200 && gitRes.statusCode < 300) {
+          const issues = JSON.parse(body).filter(i => Array.isArray(i.labels) && i.labels.some(l => l.name === 'ai-recommendation' || l.name === 'retrospective'));
+          res.json(issues);
+        } else {
+          res.status(500).json({ error: `GitHub API: ${gitRes.statusCode} ${body}` });
+        }
+      });
+    });
+    reqGit.on('error', err => res.status(500).json({ error: err.message }));
+    reqGit.end();
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při načítání GitHub Issues', detail: e.message });
+  }
+});
+// Lessons learned/retrospektiva (Markdown)
+router.get('/lessons-learned', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const generateLessonsLearned = require('../scripts/ai-lessons-learned');
+    const { from, to } = req.query;
+    const md = await generateLessonsLearned({ from, to });
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(md);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování lessons learned' });
+  }
+});
+// Compliance report (PDF)
+router.get('/compliance-report/pdf', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const generateComplianceReport = require('../scripts/ai-compliance-report');
+    const md = await generateComplianceReport();
+    const markdownpdf = require('markdown-pdf');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="compliance-report.pdf"');
+    markdownpdf().from.string(md).to.buffer((err, buffer) => {
+      if (err) return res.status(500).json({ error: 'Chyba při generování PDF' });
+      res.send(buffer);
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování compliance reportu PDF' });
+  }
+});
+// Compliance report (GDPR/ISO, Markdown)
+router.get('/compliance-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const generateComplianceReport = require('../scripts/ai-compliance-report');
+    const md = await generateComplianceReport();
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(md);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování compliance reportu' });
+  }
+});
+// Export alertů/audit logů do SIEM
+router.post('/siem-export', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const exportToSIEM = require('../scripts/siem-exporter');
+    const { type, from, to } = req.body;
+    const result = await exportToSIEM({ type, from, to });
+    // Audit log
+    const AuditLog = require('../models/AuditLog');
+    await AuditLog.create({
+      type: 'siem-export',
+      action: `Export do SIEM (${type})`,
+      details: { type, from, to, sent: result.sent, status: result.status },
+      performedBy: user?._id || null,
+      createdAt: new Date()
+    });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při exportu do SIEM', detail: e.message });
+  }
+});
+// LLM audit log summary
+router.get('/llm-audit-summary', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const llmAuditSummary = require('../scripts/ai-llm-audit-summary');
+    const result = await llmAuditSummary();
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při LLM shrnutí audit logu' });
+  }
+});
+// AI detekce anomálií v audit logu
+router.get('/anomaly-detection', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const detectAnomalies = require('../scripts/ai-anomaly-detector');
+    const result = await detectAnomalies();
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při detekci anomálií' });
+  }
+});
+// Export audit logu (JSON/CSV) s filtry
+router.get('/audit-log/export', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const AuditLog = require('../models/AuditLog');
+    const { from, to, type, userEmail, format } = req.query;
+    const filter = {};
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) filter.createdAt.$lte = new Date(to);
+    }
+    if (type) filter.type = type;
+    if (userEmail) filter['user.email'] = userEmail;
+    const logs = await AuditLog.find(filter).lean();
+    if (format === 'csv') {
+      // CSV export
+      const fields = Object.keys(logs[0] || {});
+      const csv = [fields.join(',')].concat(
+        logs.map(l => fields.map(f => JSON.stringify(l[f] ?? '')).join(','))
+      ).join('\n');
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="audit-log.csv"');
+      res.send(csv);
+    } else {
+      // JSON export
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="audit-log.json"');
+      res.send(JSON.stringify(logs, null, 2));
+    }
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při exportu audit logu' });
+  }
+});
+// What-if simulace governance
+router.get('/whatif-simulation', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const simulateWhatIf = require('../scripts/ai-whatif-simulation');
+    const incidentDelta = parseInt(req.query.incidentDelta || '0', 10);
+    const userChangeDelta = parseInt(req.query.userChangeDelta || '0', 10);
+    const result = await simulateWhatIf({ incidentDelta, userChangeDelta });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při what-if simulaci' });
+  }
+});
+// Executive summary report (PDF)
+router.get('/executive-summary/pdf', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const generateExecutiveSummary = require('../scripts/ai-executive-summary');
+    const md = await generateExecutiveSummary();
+    // Dynamicky načti markdown-pdf (nebo použij puppeteer)
+    const markdownpdf = require('markdown-pdf');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="executive-summary.pdf"');
+    markdownpdf().from.string(md).to.buffer((err, buffer) => {
+      if (err) return res.status(500).json({ error: 'Chyba při generování PDF' });
+      res.send(buffer);
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování executive summary PDF' });
+  }
+});
+// Executive summary report (Markdown)
+router.get('/executive-summary', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const generateExecutiveSummary = require('../scripts/ai-executive-summary');
+    const md = await generateExecutiveSummary();
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(md);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování executive summary' });
+  }
+});
+// Governance self-test
+router.get('/governance-selftest', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const governanceSelfTest = require('../scripts/ai-governance-selftest');
+    const result = await governanceSelfTest();
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při self-testu governance pipeline' });
+  }
+});
+// Poslední automatizovaná reakce na vysoké riziko
+router.get('/last-automated-risk-response', async (req, res) => {
+  try {
+    const AuditLog = require('../models/AuditLog');
+    const log = await AuditLog.findOne({ type: 'ai-incident-risk' }).sort({ createdAt: -1 }).lean();
+    res.json(log || {});
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při načítání automatizované reakce' });
+  }
+});
+// Predikce rizika incidentů
+router.get('/incident-risk-prediction', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const predictIncidentRisk = require('../scripts/ai-incident-risk-predictor');
+    const prediction = await predictIncidentRisk();
+    res.json(prediction);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při predikci rizika incidentů' });
+  }
+});
+// Export governance report jako JSON (pouze pro adminy)
+router.get('/governance-report/export', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const generateGovernanceReport = require('../scripts/ai-governance-report');
+    const report = await generateGovernanceReport();
+    res.setHeader('Content-Disposition', 'attachment; filename="governance-report.json"');
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(report, null, 2));
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při exportu governance reportu' });
+  }
+});
 const express = require('express');
 const router = express.Router();
+const generateGovernanceReport = require('../scripts/ai-governance-report');
+// Governance report endpoint
+router.get('/governance-report', async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.permissions || !user.permissions.includes('governance:view')) {
+      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
+    }
+    const report = await generateGovernanceReport();
+    res.json(report);
+  } catch (e) {
+    res.status(500).json({ error: 'Chyba při generování governance reportu' });
+  }
+});
 const { Parser } = require('json2csv');
 const { adminOnly, adminRole } = require('../middleware/auth');
 const User = require('../models/User');
@@ -127,7 +565,6 @@ router.get('/dashboard-report.csv', adminOnly, adminRole('superadmin'), async (r
   });
   // Audit log
   try {
-    // ...existing code...
     await AuditLog.create({
       action: 'export_report_csv',
       performedBy: req.user._id,
@@ -227,7 +664,6 @@ router.get('/dashboard-report.xlsx', adminOnly, adminRole('superadmin'), async (
   });
   // Audit log
   try {
-    // ...existing code...
     await AuditLog.create({
       action: 'export_report_xlsx',
       performedBy: req.user._id,
@@ -283,31 +719,24 @@ router.get('/dashboard-report.pdf', adminOnly, adminRole('superadmin'), async (r
   });
   const segmentHeatmapData = Object.values(bySeg).map(v => ({ region: v.region, ageGroup: v.ageGroup, ctr: v.sent ? v.clicks/v.sent : 0 }));
   const topSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>b.ctr-a.ctr).slice(0,3);
-
   // --- Získat enabledSections z ReportSetting ---
   const ReportSetting = require('../models/ReportSetting');
   let enabledSections = ['aiSummary','ctrTrend','heatmap'];
   try {
-    // Najít poslední aktivní nastavení (může být podle uživatele nebo globálně)
     const latestSetting = await ReportSetting.findOne({ enabled: true }).sort({ updatedAt: -1 }).lean();
     if (latestSetting && Array.isArray(latestSetting.enabledSections)) {
       enabledSections = latestSetting.enabledSections;
     }
   } catch {}
-
-  // --- AI sumarizace trendů a segmentů ---
+  // --- AI sumarizace ---
   let summary = '';
-  let ctrTrendPng = null;
-  let heatmapPng = null;
-  try {
-    // Top a bottom segmenty
+  if (enabledSections.includes('aiSummary')) {
     const bottomSegments = segmentHeatmapData.filter(s => s.ctr > 0).sort((a,b)=>a.ctr-b.ctr).slice(0,1);
-    // Prompt pro OpenAI
-    if (enabledSections.includes('aiSummary')) {
-      const prompt = `Jsi marketingový analytik. Na základě těchto statistik:\n- Průměrné CTR: ${(avgCtr*100).toFixed(2)}%\n- Počet kampaní: ${campaignCount}\n- Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let (CTR ${(topSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\n- Nejslabší segment: ${bottomSegments.length ? `${bottomSegments[0].region}, ${bottomSegments[0].ageGroup} let (CTR ${(bottomSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\nStručně shrň hlavní trendy a doporučení pro růst v nejslabším segmentu. Odpověz česky, max. 3 věty.`;
+    const prompt = `Jsi marketingový analytik. Na základě těchto statistik:\n- Průměrné CTR: ${(avgCtr*100).toFixed(2)}%\n- Počet kampaní: ${campaignCount}\n- Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let (CTR ${(topSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\n- Nejslabší segment: ${bottomSegments.length ? `${bottomSegments[0].region}, ${bottomSegments[0].ageGroup} let (CTR ${(bottomSegments[0].ctr*100).toFixed(1)}%)` : 'N/A'}\nStručně shrň hlavní trendy a doporučení pro růst v nejslabším segmentu. Odpověz česky, max. 3 věty.`;
+    let aiSummary = '';
+    try {
       const { default: axios } = require('axios');
       const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-      let aiSummary = '';
       if (OPENAI_API_KEY) {
         const openaiRes = await axios.post('https://api.openai.com/v1/chat/completions', {
           model: 'gpt-3.5-turbo',
@@ -325,18 +754,10 @@ router.get('/dashboard-report.pdf', adminOnly, adminRole('superadmin'), async (r
         });
         aiSummary = openaiRes.data.choices[0].message.content.trim();
       }
-      summary = aiSummary;
+    } catch (e) {
+      aiSummary = '';
     }
-    if (enabledSections.includes('ctrTrend')) {
-      ctrTrendPng = await generateCtrTrendChart(ctrTrendData);
-    }
-    if (enabledSections.includes('heatmap')) {
-      heatmapPng = await generateSegmentHeatmap(segmentHeatmapData);
-    }
-  } catch (e) {
-    summary = '';
-    ctrTrendPng = null;
-    heatmapPng = null;
+    summary = aiSummary || `Průměrné CTR: ${(avgCtr*100).toFixed(2)}%. Nejlepší segment: ${topSegments.length ? `${topSegments[0].region}, ${topSegments[0].ageGroup} let` : 'N/A'}.`;
   }
   // Vygenerovat PDF s ohledem na enabledSections
   const pdfBuffer = await generateDashboardPdf({
@@ -347,7 +768,6 @@ router.get('/dashboard-report.pdf', adminOnly, adminRole('superadmin'), async (r
   });
   // Audit log
   try {
-    // ...existing code...
     await AuditLog.create({
       action: 'download_report',
       performedBy: req.user._id,
@@ -394,7 +814,7 @@ router.get('/ai-feedback-export', adminOnly, adminRole('superadmin'), async (req
 const SecurityAlert = require('../models/SecurityAlert');
 // --- AUDIT LOG: výpis a export ---
 // GET /api/admin/audit-log?since=YYYY-MM-DD&action=...&admin=...&format=csv
-router.get('/audit-log', adminOnly, adminRole('superadmin'), async (req, res) => {
+router.get('/audit-log', adminOnly, adminRole(['superadmin','approver']), async (req, res) => {
   const { since, action, admin, format } = req.query;
   const q = {};
   if (since) q.createdAt = { $gte: new Date(since) };
@@ -423,41 +843,78 @@ router.get('/audit-log', adminOnly, adminRole('superadmin'), async (req, res) =>
 // --- SPRÁVA ADMINŮ A ROLÍ ---
 // ...existing code...
 // ...existing code...
-// GET /api/admin/admins - výpis všech adminů a jejich rolí (pouze superadmin)
-router.get('/admins', adminOnly, adminRole('superadmin'), async (req, res) => {
-  const admins = await User.find({ role: 'admin' }).select('_id name email adminRole createdAt lastLogin').lean();
-  res.json(admins);
+
+// GET /admins?role=admin|client|mechanic|all
+// reviewer i superadmin mohou číst
+router.get('/admins', adminOnly, adminRole(['superadmin','approver']), async (req, res) => {
+  const { role } = req.query;
+  let query = {};
+  if (role && role !== 'all') query.role = role;
+  const users = await User.find(query).select('_id name email role adminRole createdAt lastLogin permissions').lean();
+  res.json(users);
+
+// GET granularita práv uživatele
+router.get('/admins/:id/permissions', adminOnly, adminRole('superadmin'), async (req, res) => {
+  const user = await User.findById(req.params.id).select('permissions name email').lean();
+  if (!user) return res.status(404).json({ error: 'Uživatel nenalezen.' });
+  res.json(user.permissions || []);
 });
 
-// PATCH /api/admin/admins/:id/role - změna role admina (pouze superadmin, audit log)
-router.patch('/admins/:id/role', adminOnly, adminRole('superadmin'), async (req, res) => {
-  const { adminRole } = req.body;
-  if (!['superadmin','approver','readonly'].includes(adminRole)) {
-    return res.status(400).json({ error: 'Neplatná role.' });
-  }
+// PUT granularita práv uživatele
+router.put('/admins/:id/permissions', adminOnly, adminRole('superadmin'), async (req, res) => {
+  const { permissions } = req.body;
   const user = await User.findById(req.params.id);
-  if (!user || user.role !== 'admin') return res.status(404).json({ error: 'Admin nenalezen.' });
-  const prevRole = user.adminRole;
-  user.adminRole = adminRole;
+  if (!user) return res.status(404).json({ error: 'Uživatel nenalezen.' });
+  const prevPermissions = user.permissions || [];
+  user.permissions = Array.isArray(permissions) ? permissions : [];
   await user.save();
-  // Audit log
   await AuditLog.create({
-    action: 'Změna role admina',
+    action: 'Změna granularitních práv',
     performedBy: req.user._id,
     targetUser: user._id,
-    details: { prevRole, newRole: adminRole },
+    details: { prevPermissions, newPermissions: user.permissions },
     createdAt: new Date()
   });
-  // Security alert
-  await SecurityAlert.create({
-    type: 'role-change',
-    message: `Role admina ${user.name} (${user.email}) změněna z ${prevRole} na ${adminRole} superadminem ${req.user.name} (${req.user.email})`,
-    user: user._id,
+  res.json({ ok: true });
+});
+});
+
+
+
+// PATCH /api/admin/admins/:id/role - změna role uživatele (role i adminRole), audit log, notifikace
+router.patch('/admins/:id/role', adminOnly, adminRole('superadmin'), async (req, res) => {
+  const { role, adminRole } = req.body;
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ error: 'Uživatel nenalezen.' });
+  const prevRole = user.role;
+  const prevAdminRole = user.adminRole;
+  if (role && ['client','mechanic','admin'].includes(role)) user.role = role;
+  if (adminRole && ['superadmin','approver','readonly'].includes(adminRole)) user.adminRole = adminRole;
+  await user.save();
+  await AuditLog.create({
+    action: 'Změna role uživatele',
     performedBy: req.user._id,
-    details: { prevRole, newRole: adminRole },
+    targetUser: user._id,
+    details: { prevRole, newRole: user.role, prevAdminRole, newAdminRole: user.adminRole },
     createdAt: new Date()
   });
-  res.json({ result: 'ok', adminId: user._id, prevRole, newRole: adminRole });
+  // Notifikace superadminovi
+  try {
+    const { sendEmail } = require('../utils/notify');
+    const superadmins = await User.find({ role: 'admin', adminRole: 'superadmin' }).lean();
+    for (const sa of superadmins) {
+      await sendEmail({
+        to: sa.email,
+        subject: 'Bezpečnostní událost: změna role uživatele',
+        text: `Uživatel ${user.name} (${user.email}) změnil roli z ${prevRole}/${prevAdminRole} na ${user.role}/${user.adminRole}. Provedl: ${req.user.name} (${req.user.email})`,
+        html: `<b>Uživatel:</b> ${user.name} (${user.email})<br/><b>Původní role:</b> ${prevRole}/${prevAdminRole}<br/><b>Nová role:</b> ${user.role}/${user.adminRole}<br/><b>Provedl:</b> ${req.user.name} (${req.user.email})`
+      });
+    }
+  } catch (e) {
+    // ignore error, log only
+    console.error('Chyba při odesílání notifikace superadminovi:', e);
+  }
+  res.json({ ok: true });
 });
 // GET /api/admin/security-alerts - výpis alertů (pouze admin)
 router.get('/security-alerts', adminOnly, async (req, res) => {
@@ -566,7 +1023,6 @@ router.patch('/alert-logs/:id', adminOnly, async (req, res) => {
   }
   res.status(400).json({ error: 'Chybí data pro úpravu.' });
 });
-// ...existing code...
 // PATCH /api/admin/alert-logs/:id/approve-action
 router.patch('/alert-logs/:id/approve-action', adminOnly, adminRole('approver'), async (req, res) => {
   const userId = req.user?._id;
@@ -738,7 +1194,7 @@ router.post('/alert-logs/:id/execute-action', adminOnly, async (req, res) => {
   const AlertLog = require('../models/AlertLog');
   // ...existing code...
   const log = await AlertLog.findOne({ _id: req.params.id, admin: userId });
-  if (!log || !log.action) return res.status(404).json({ error: 'Alert nebo akce nenalezena.' });
+  if (!log || !log.action) return res.status(404).json({ error: 'Alert nebo akce nenalezená.' });
   let result = 'not-executed';
   let affected = 0;
   try {
@@ -1197,6 +1653,7 @@ router.get('/user/:id/predict-channel', adminOnly, async (req, res) => {
   res.json({ bestChannel });
 });
 // PATCH /api/admin/user/:id/preferred-channel
+const { captureEvent } = require('../utils/posthog');
 router.patch('/user/:id/preferred-channel', adminOnly, async (req, res) => {
   // ...existing code...
   const { preferredChannel } = req.body;
@@ -1216,6 +1673,12 @@ router.patch('/user/:id/preferred-channel', adminOnly, async (req, res) => {
     oldChannel,
     newChannel: preferredChannel,
     changedAt: new Date().toISOString()
+  });
+  captureEvent(req.user._id?.toString() || req.user.id, 'preferred_channel_changed', {
+    userId: user._id,
+    userEmail: user.email,
+    oldChannel,
+    newChannel: preferredChannel
   });
   res.json({ success: true, preferredChannel });
 });

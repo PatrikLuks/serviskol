@@ -1,0 +1,7 @@
+Pracuj strategicky podle zadání a plánů v projektu ServisKol. Zaměř se na:
+- maximální uživatelský komfort (pro klienty i techniky)
+- jednoduchost a přehlednost (UX, onboarding, nápověda)
+- zelený, hravý design a gamifikaci (věrnostní program, výzvy, odměny)
+- AI asistenci (návrhy příčin, doporučení, chat, automatizace)
+- bezpečnost, exporty, analytiku a škálovatelnost
+Navrhni řešení, která usnadní péči o kolo, zvýší loajalitu klientů a efektivitu práce techniků. Výstup strukturovaně, v bodech, s důrazem na priority a MVP.

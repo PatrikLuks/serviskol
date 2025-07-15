@@ -1,11 +1,378 @@
-name: CI
+  ai-accessibility-review:
+    name: AI Accessibility Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Install glob
+        run: npm install glob
+      - name: Run AI accessibility review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-accessibility-review.js
+      - name: Upload AI accessibility review
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-accessibility-review
+          path: ai-accessibility-review.md
+      - name: Slack notification (AI accessibility review)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Accessibility Review* :wheelchair:\n$(cat ai-accessibility-review.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  ai-product-roadmap-advisor:
+    name: AI Product Roadmap Advisor
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI product roadmap advisor
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-product-roadmap-advisor.js
+      - name: Upload AI product roadmap
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-product-roadmap
+          path: ai-product-roadmap.md
+      - name: Slack notification (AI product roadmap)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Product Roadmap* :rocket:\n$(cat ai-product-roadmap.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  ai-performance-trend-report:
+    name: AI Performance Trend Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI performance trend report
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-performance-trend-report.js
+      - name: Upload AI performance trend report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-performance-trend-report
+          path: ai-performance-trend-report.md
+      - name: Slack notification (AI performance trend report)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Performance Trend Report* :chart_with_upwards_trend:\n$(cat ai-performance-trend-report.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  ai-ux-feedback:
+    name: AI UX Feedback
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI UX feedback
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-ux-feedback.js
+      - name: Upload AI UX feedback
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-ux-feedback
+          path: ai-ux-feedback.md
+      - name: Slack notification (AI UX feedback)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI UX Feedback* :art:\n$(cat ai-ux-feedback.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  ai-dependency-update-advisor:
+    name: AI Dependency Update Advisor
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI dependency update advisor
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-dependency-update-advisor.js
+      - name: Upload AI dependency update advisor
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-dependency-update-advisor
+          path: ai-dependency-update-advisor.md
+      - name: Slack notification (AI dependency update advisor)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Dependency Update Advisor* :package:\n$(cat ai-dependency-update-advisor.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  ai-security-trend-report:
+    name: AI Security Trend Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI security trend report
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-security-trend-report.js
+      - name: Upload AI security trend report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-security-trend-report
+          path: ai-security-trend-report.md
+      - name: Slack notification (AI security trend report)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Security Trend Report* :shield:\n$(cat ai-security-trend-report.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  ai-code-review-coach:
+    name: AI Code Review Coach
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI code review coach
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-code-review-coach.js
+      - name: Upload AI code review coach
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review-coach
+          path: ai-code-review-coach.md
+      - name: Slack notification (AI code review coach)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Code Review Coach* :mag_right:\n$(cat ai-code-review-coach.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  ai-changelog-summary:
+    name: AI Changelog Summary
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI changelog summary
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-changelog-summary.js
+      - name: Upload AI changelog summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-changelog-summary
+          path: ai-changelog-summary.md
+      - name: Slack notification (AI changelog summary)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Changelog Summary* :memo:\n$(cat ai-changelog-summary.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  ai-incident-postmortem:
+    name: AI Incident Postmortem
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI incident postmortem
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-incident-postmortem.js
+      - name: Upload AI incident postmortem
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-incident-postmortem
+          path: ai-incident-postmortem.md
+      - name: Slack notification (AI incident postmortem)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Incident Postmortem* :ambulance:\n$(cat ai-incident-postmortem.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  ai-onboarding-feedback:
+    name: AI Onboarding Feedback
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI onboarding feedback
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-onboarding-feedback.js
+      - name: Upload AI onboarding feedback
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-onboarding-feedback
+          path: ai-onboarding-feedback.md
+      - name: Slack notification (AI onboarding feedback)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Onboarding Feedback* :wave:\n$(cat ai-onboarding-feedback.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  ai-knowledge-base:
+    name: AI Knowledge Base
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Install glob
+        run: npm install glob
+      - name: Run AI knowledge base builder
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-knowledge-base.js
+      - name: Upload AI knowledge base
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-knowledge-base
+          path: ai-knowledge-base.md
+      - name: Slack notification (AI knowledge base)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Knowledge Base* :books:\n$(cat ai-knowledge-base.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+
+
+
+name: CI
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
 jobs:
   frontend:
     name: Frontend lint, test, build, coverage
@@ -34,11 +401,21 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./frontend/coverage/lcov.info
+      - name: Slack notification (AI alert)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Alert Report* :rotating_light:\n$(cat ai-alert-report.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           flags: frontend
           name: frontend-coverage
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
-
   backend:
     name: Backend lint, test, coverage
     runs-on: ubuntu-latest
@@ -69,18 +446,6 @@ jobs:
           name: backend-coverage
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
-
-  docker:
-    name: Docker build (frontend & backend)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build backend image
-        run: docker build -f Dockerfile.backend .
-      - name: Build frontend image
-        run: docker build -f Dockerfile.frontend .
 
   docker-stack:
     name: Docker Compose stack test
@@ -172,3 +537,157 @@ jobs:
         run: |
           cd frontend
           npx cypress run
+
+  copilot-pr-review:
+    name: Copilot PR Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: github/copilot-review-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  ai-changelog:
+    name: AI Changelog
+    if: github.event_name == 'release' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Generate AI changelog
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/generate-changelog-ai.js
+      - name: Commit & push changelog
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "AI changelog update [skip ci]" || echo "No changes to commit"
+          git push || echo "No push (possibly PR or no changes)"
+
+  ai-usage-report:
+    name: AI Usage Report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Generate AI usage report
+        run: node scripts/ai-usage-report.js
+      - name: Upload AI usage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-usage-report
+          path: ai-usage-report.md
+
+  ai-healthcheck:
+    name: AI Healthcheck Backend API
+    runs-on: ubuntu-latest
+    needs: [backend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI healthcheck
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-healthcheck.js
+      - name: Upload AI healthcheck report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-healthcheck-report
+          path: ai-healthcheck-report.md
+      - name: Slack notification (AI healthcheck)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Healthcheck Report* :stethoscope:\n$(cat ai-healthcheck-report.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  ai-openapi-docs:
+    name: AI OpenAPI Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Install OpenAPI validator
+        run: npm install -g @apidevtools/swagger-cli
+      - name: Generate OpenAPI docs (AI)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/generate-openapi-ai.js
+      - name: Validate OpenAPI spec
+        run: swagger-cli validate backend/openapi.generated.yaml
+      - name: Check for OpenAPI changes
+        id: diff
+        run: |
+          if git diff --exit-code backend/openapi.generated.yaml; then
+            echo "No OpenAPI changes."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "OpenAPI spec changed!"
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Commit & push OpenAPI docs
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add backend/openapi.generated.yaml
+          git commit -m "AI OpenAPI update [skip ci]" || echo "No changes to commit"
+          git push || echo "No push (possibly PR or no changes)"
+
+  ai-refactor-bot:
+    name: AI Refactor Bot
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Run AI refactor bot
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-refactor-bot.js
+      - name: Upload AI refactor report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-refactor-report
+          path: ai-refactor-report.md
+      - name: Slack notification (AI refactor)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*AI Refactor Report* :wrench:\n$(cat ai-refactor-report.md)"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

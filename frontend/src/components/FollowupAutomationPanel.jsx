@@ -161,7 +161,6 @@ export default function FollowupAutomationPanel() {
           </tbody>
         </table>
       </div>
-      </form>
       {loading && <div>Načítám...</div>}
       {error && <div className="text-red-600">{error}</div>}
       <table className="w-full text-xs border mb-4">

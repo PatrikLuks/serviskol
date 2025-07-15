@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const { Parser } = require('json2csv');
@@ -30,6 +29,7 @@ const User = require('../models/User');
 const axios = require('axios');
 // /api/bi/predictions?type=churn|followup|segment&format=csv|json&apiKey=...
 router.get('/predictions', requireApiKey, async (req, res) => {
+  captureEvent(req.biUser?._id?.toString() || req.biUser?.id || 'anonymous', 'bi_export_predictions', { type: req.query.type, format: req.query.format });
   const { type, format, realtime, segment, region, ageMin, ageMax, channel } = req.query;
   if (!req.hasBiPermission('predictions:read')) {
     return res.status(403).json({ error: 'API klíč nemá oprávnění pro čtení predikcí.' });
@@ -125,8 +125,10 @@ router.get('/predictions', requireApiKey, async (req, res) => {
   res.json(preds);
 });
 const EngagementMetric = require('../models/EngagementMetric');
+const { captureEvent } = require('../utils/posthog');
 // /api/bi/engagement-metrics?from=YYYY-MM-DD&to=YYYY-MM-DD&format=csv|json&apiKey=...
 router.get('/engagement-metrics', requireApiKey, async (req, res) => {
+  captureEvent(req.biUser?._id?.toString() || req.biUser?.id || 'anonymous', 'bi_export_engagement_metrics', { from: req.query.from, to: req.query.to, format: req.query.format });
   const { from, to, format } = req.query;
   if (!req.hasBiPermission('metrics:read')) {
     return res.status(403).json({ error: 'API klíč nemá oprávnění pro čtení metrik.' });
@@ -170,6 +172,7 @@ router.get('/engagement-metrics', requireApiKey, async (req, res) => {
 });
 // /api/bi/segments?format=csv|json&apiKey=...
 router.get('/segments', requireApiKey, async (req, res) => {
+  captureEvent(req.biUser?._id?.toString() || req.biUser?.id || 'anonymous', 'bi_export_segments', { format: req.query.format });
   const { format } = req.query;
   if (!req.hasBiPermission('segments:read')) {
     return res.status(403).json({ error: 'API klíč nemá oprávnění pro čtení segmentů.' });
@@ -207,6 +210,7 @@ router.get('/segments', requireApiKey, async (req, res) => {
 
 // GET /api/bi/segments/ai - seznam AI segmentů a počty uživatelů
 router.get('/segments/ai', requireApiKey, async (req, res) => {
+  captureEvent(req.biUser?._id?.toString() || req.biUser?.id || 'anonymous', 'bi_export_ai_segments', {});
   try {
     const pipeline = [
       { $group: { _id: '$aiSegment', count: { $sum: 1 } } },
@@ -221,6 +225,7 @@ router.get('/segments/ai', requireApiKey, async (req, res) => {
 
 // GET /api/bi/users?aiSegment=VIP - uživatelé v daném AI segmentu
 router.get('/users', requireApiKey, async (req, res) => {
+  captureEvent(req.biUser?._id?.toString() || req.biUser?.id || 'anonymous', 'bi_export_users_by_segment', { aiSegment: req.query.aiSegment, region: req.query.region });
   try {
     const { aiSegment, region, ageMin, ageMax } = req.query;
     const q = {};

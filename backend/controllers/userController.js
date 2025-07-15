@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { auditLog } = require('../middleware/auditLog');
 
+const { captureEvent } = require('../utils/posthog');
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -10,6 +12,8 @@ exports.register = async (req, res) => {
     if (existingUser) return res.status(400).json({ msg: 'Uživatel již existuje.' });
     const user = new User({ name, email, passwordHash: password, role });
     await user.save();
+    // Logování registrace do PostHog
+    captureEvent(user._id.toString(), 'register', { email, role });
     res.status(201).json({ msg: 'Registrace úspěšná.' });
   } catch (err) {
     res.status(500).json({ msg: 'Chyba serveru.' });
@@ -44,6 +48,8 @@ exports.login = async (req, res) => {
     }
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'tajnyklic', { expiresIn: '7d' });
     auditLog('Přihlášení', user, { ip: req.ip });
+    // Logování loginu do PostHog
+    captureEvent(user._id.toString(), 'login', { email, role: user.role });
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, twoFactorEnabled: user.twoFactorEnabled } });
   } catch (err) {
     console.error('Chyba při loginu:', err, req.body);

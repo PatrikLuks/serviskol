@@ -1,0 +1,26 @@
+name: AI Trend Scout
+
+on:
+  schedule:
+    - cron: '0 10 1 * *' # Prvního dne v měsíci v 10:00
+  workflow_dispatch:
+
+jobs:
+  ai-trend-scout:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ai_trend_scout.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai_trend_scout.js

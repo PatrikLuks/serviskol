@@ -37,7 +37,9 @@ const userSchema = new mongoose.Schema({
   // API klíč pro BI/reporting
   apiKey: { type: String, unique: true, sparse: true },
   // Granularita oprávnění k API klíči
-  apiKeyPermissions: [{ type: String }]
+  apiKeyPermissions: [{ type: String }],
+  // Granularita práv v aplikaci (např. ai:run-report, user:manage, security:view)
+  permissions: [{ type: String }]
 });
 
 // Decision tree predikce nejlepšího kanálu

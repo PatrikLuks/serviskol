@@ -1,29 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react'
-import Button from '@mui/material/Button';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Bikes from './pages/Bikes';
-import BikeDetail from './pages/BikeDetail';
-import Onboarding from './pages/Onboarding';
-import Help from './pages/Help';
-import AdminDashboard from './pages/AdminDashboard';
-import CampaignsAdmin from './pages/CampaignsAdmin';
-import CampaignsReport from './pages/CampaignsReport';
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { useAuth } from './context/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
-import FeedbackForm from './components/FeedbackForm';
-import AIChat from './components/AIChat';
-import NotificationWidget from './components/NotificationWidget';
-import ProfileSettings from './pages/ProfileSettings';
-import AuditLog from './pages/AuditLog';
-import GdprRequests from './pages/GdprRequests';
-import ReactGA from 'react-ga4';
+
+import posthog from 'posthog-js';
 
 ReactGA.initialize('G-XXXXXXXXXX'); // TODO: nahraďte vlastním GA4 měřicím ID
 
@@ -51,9 +27,21 @@ function Navbar() {
 function App() {
   const [count, setCount] = useState(0)
 
+
   React.useEffect(() => {
     ReactGA.send({ hitType: 'pageview', page: window.location.pathname + window.location.search });
+    posthog.capture('$pageview');
   }, []);
+
+  // Ukázka: zachycení klíčových akcí (doplnit do příslušných handlerů v komponentách)
+  // posthog.capture('registrace', { email: ... });
+  // posthog.capture('login', { email: ... });
+  // posthog.capture('vytvoreni_servisni_zadosti', { ... });
+  // posthog.capture('onboarding_dokonceno');
+  // posthog.capture('ai_chat_dotaz', { dotaz: ... });
+  // posthog.capture('export_dat');
+  // posthog.capture('zobrazeni_analytiky');
+  // posthog.capture('gamifikace_odmena');
 
   return (
     <Router>

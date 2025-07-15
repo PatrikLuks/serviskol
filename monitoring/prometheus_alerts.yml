@@ -18,3 +18,43 @@ groups:
     annotations:
       summary: "Vysoký počet chyb 5xx na backendu"
       description: "Více než 5 % požadavků na backend končí chybou 5xx."
+
+  # Vysoká latence backendu
+  - alert: BackendHighLatency
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="serviskol-backend"}[5m])) by (le)) > 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Vysoká latence backendu"
+      description: "95. percentil latence požadavků na backend je vyšší než 1s po dobu 5 minut."
+
+  # Nedostupnost MongoDB
+  - alert: MongoDBDown
+    expr: up{job="mongodb"} == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "MongoDB není dostupná"
+      description: "MongoDB instance je nedostupná déle než 2 minuty."
+
+  # Nedostatek paměti backendu
+  - alert: BackendLowMemory
+    expr: (node_memory_MemAvailable_bytes{job="serviskol-backend"} / node_memory_MemTotal_bytes{job="serviskol-backend"}) < 0.1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Nedostatek paměti na backendu"
+      description: "Dostupná paměť na backendu je pod 10 % po dobu 5 minut."
+
+  # Vysoké vytížení CPU backendu
+  - alert: BackendHighCPU
+    expr: rate(process_cpu_seconds_total{job="serviskol-backend"}[5m]) > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Vysoké vytížení CPU na backendu"
+      description: "Vytížení CPU backendu je vyšší než 80 % po dobu 5 minut."

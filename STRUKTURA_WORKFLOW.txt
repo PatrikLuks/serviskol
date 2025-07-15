@@ -1,0 +1,9 @@
+projekt-cykloservis/
+├── 00_plan.txt           # výstup z jednání s klientem
+├── 01_instructions.md    # konkrétní zadání pro AI
+├── 02_ai_prompts/
+│   ├── pracuj_strategicky.txt
+│   └── pokracuj_strategicky.txt
+├── 03_ai_outputs/
+│   ├── vystup_01.md
+│   └── vystup_02.md

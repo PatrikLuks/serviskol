@@ -1,0 +1,20 @@
+[
+  {
+    "id": "strategicky-plan-servis",
+    "title": "Strategický plán pro cykloservis",
+    "prompt": "Navrhni strategický plán pro rozvoj cykloservisu s důrazem na efektivitu, zákaznickou zkušenost a automatizaci.",
+    "category": "strategie",
+    "author": "Patrik Luks",
+    "created": "2025-07-14",
+    "notes": "Vhodné pro brainstorming a plánování rozvoje služeb."
+  },
+  {
+    "id": "ai-testy-js",
+    "title": "Generování testů v JavaScriptu",
+    "prompt": "Napiš unit testy pro následující funkci v JavaScriptu:",
+    "category": "testování",
+    "author": "Tým",
+    "created": "2025-07-14",
+    "notes": "Použít pro rychlé generování testů v rámci CI/CD."
+  }
+]

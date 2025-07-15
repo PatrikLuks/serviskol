@@ -98,7 +98,15 @@ Pro automatizaci nastavte cron job nebo použijte obdobný plánovač.
 - Problémy s právy: spusťte skript s `sudo` nebo upravte práva k souborům
 - Pro detailní logy použijte přepínač `-v` u mongorestore
 
-## Monitoring a alerting
+
+## Product analytics (PostHog)
+- Pro logování klíčových backend akcí použijte utilitu `utils/posthog.js`:
+  ```js
+  const { captureEvent } = require('./utils/posthog');
+  captureEvent(userId, 'api_export', { typ: 'csv', segment });
+  ```
+- Nastavte `POSTHOG_KEY` a `POSTHOG_HOST` v `.env`.
+- Doporučené eventy: registrace, login, export, servisní workflow, incident, onboarding, AI chat, analytika, gamifikace.
 
 ### Základní monitoring backendu
 - Skript `./scripts/monitor_health.sh` kontroluje dostupnost endpointu `/api/health/health`

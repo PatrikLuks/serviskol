@@ -1,0 +1,27 @@
+name: AI Impact Report
+
+on:
+  schedule:
+    - cron: '0 8 1 1,4,7,10 *' # Prvního dne v lednu, dubnu, červenci, říjnu v 8:00
+  workflow_dispatch:
+
+jobs:
+  ai-impact-report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ai_impact_report.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai_impact_report.js

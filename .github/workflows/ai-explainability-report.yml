@@ -1,0 +1,26 @@
+name: AI Explainability Report
+
+on:
+  schedule:
+    - cron: '0 12 1 1,4,7,10 *' # Prvního dne v lednu, dubnu, červenci, říjnu ve 12:00
+  workflow_dispatch:
+
+jobs:
+  ai-explainability-report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ai_explainability_report.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai_explainability_report.js

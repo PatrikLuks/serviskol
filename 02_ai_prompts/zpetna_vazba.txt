@@ -1,0 +1,1 @@
+Dej zpětnou vazbu na předložený plán nebo zadání ServisKol. Uveď silné stránky, slabiny a doporučení pro zlepšení s ohledem na uživatelskou přívětivost, technickou realizovatelnost a škálovatelnost.

@@ -1,0 +1,1 @@
+Vytvoř testovací plán pro aplikaci ServisKol. Popiš hlavní oblasti testování (funkce, bezpečnost, UX, onboarding, exporty, analytika), typy testů (unit, integrační, e2e), návrh testovacích scénářů pro klíčové workflow (registrace, přidání kola, servisní workflow, chat, věrnostní program, export), doporučené nástroje a pokrytí testy pro MVP i další rozvoj.

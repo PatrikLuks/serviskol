@@ -34,4 +34,11 @@
 - [ ] Opakovat testy po optimalizaci
 
 ---
-Tento checklist pravidelně aktualizujte dle zkušeností a potřeb provozu.
+> **Poznámka:** Tento checklist pravidelně aktualizujte dle zkušeností, incidentů a nových trendů v oblasti testování výkonu.
+
+---
+
+## Inovace a trendy
+- [ ] Pravidelně sledujte nové trendy v oblasti load/performance testování, observability a AI
+- [ ] Zvažte zavedení nových nástrojů a technologií dle potřeb projektu
+- [ ] Sdílejte inovace a zkušenosti v týmu
