@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Webhook = require('../models/Webhook');
 const { adminOnly, adminRole } = require('../middleware/auth');
-const AuditLog = require('../models/AuditLog');
+const { getModel } = require('../db');
+const AuditLog = getModel('AuditLog');
 const runWebhooksCron = require('../scripts/runWebhooksCron');
 
 // POST /api/admin/webhooks/:id/trigger - ruční spuštění webhooku

@@ -1,5 +1,5 @@
 // LoyaltyPoints model pro MongoDB (Mongoose)
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const loyaltyPointsSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -16,4 +16,4 @@ const loyaltyPointsSchema = new mongoose.Schema({
   tier: { type: String, enum: ['Bronze', 'Silver', 'Gold', 'Platinum'], default: 'Bronze' }
 });
 
-module.exports = mongoose.model('LoyaltyPoints', loyaltyPointsSchema);
+module.exports = registerModel('LoyaltyPoints', loyaltyPointsSchema);

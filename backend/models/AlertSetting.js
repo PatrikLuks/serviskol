@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const alertSettingSchema = new mongoose.Schema({
   admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -8,4 +8,4 @@ const alertSettingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('AlertSetting', alertSettingSchema);
+module.exports = registerModel('AlertSetting', alertSettingSchema);

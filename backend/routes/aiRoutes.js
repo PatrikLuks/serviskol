@@ -1,6 +1,6 @@
 
 const express = require('express');
-const OpenAI = require('openai');
+
 const { auth, adminOnly, adminRole } = require('../middleware/auth');
 const AIMessage = require('../models/AIMessage');
 const { auditLog } = require('../middleware/auditLog');
@@ -9,7 +9,23 @@ const promClient = require('prom-client');
 const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+let openai;
+if (process.env.NODE_ENV === 'test') {
+  // Mock OpenAI klient pro testy
+  openai = {
+    createChatCompletion: async () => ({
+      data: {
+        choices: [
+          { message: { content: 'Mockovaná odpověď AI.' } }
+        ]
+      }
+    })
+  };
+} else {
+  const OpenAI = require('openai');
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 
 // Prometheus metriky

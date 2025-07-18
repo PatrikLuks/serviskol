@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const alertLogSchema = new mongoose.Schema({
   admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -29,4 +29,4 @@ const alertLogSchema = new mongoose.Schema({
   aiFeedback: { type: String, enum: ['excellent', 'good', 'neutral', 'bad', 'irrelevant'], default: 'neutral' }
 });
 
-module.exports = mongoose.model('AlertLog', alertLogSchema);
+module.exports = registerModel('AlertLog', alertLogSchema);

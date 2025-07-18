@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
@@ -85,52 +85,12 @@ userSchema.statics.predictBestChannel = function(user) {
 };
 
 // Hashování hesla před uložením
+const userPreSaveLogic = require('../utils/userPreSaveLogic');
 userSchema.pre('save', async function (next) {
-  // Audit log a webhook trigger při změně AI segmentu
-  if (this.isModified('aiSegment') && !this.isNew) {
-    try {
-      const AuditLog = require('./AuditLog');
-      await AuditLog.create({
-        action: 'ai_segment_change',
-        performedBy: this._id,
-        details: { newSegment: this.aiSegment, user: this._id }
-      });
-      // Trigger webhooky na změnu segmentu (pokud existují)
-      const Webhook = require('../models/Webhook');
-      const webhooks = await Webhook.find({ event: 'ai_segment_change', active: true });
-      for (const w of webhooks) {
-        require('../utils/webhookTrigger')(w, { userId: this._id, newSegment: this.aiSegment });
-      }
-      // Automatizovaný follow-up při přechodu do rizikového segmentu
-      if (this.aiSegment === 'riziko_odchodu') {
-        const FollowupAutomation = require('../models/FollowupAutomation');
-        const automations = await FollowupAutomation.find({ triggerSegment: 'riziko_odchodu', active: true });
-        for (const a of automations) {
-          // A/B testování: pokud jsou varianty, vyber náhodně jednu aktivní
-          let variant = null;
-          if (Array.isArray(a.variants) && a.variants.length > 0) {
-            const activeVariants = a.variants.filter(v => v.active !== false);
-            if (activeVariants.length > 0) {
-              variant = activeVariants[Math.floor(Math.random() * activeVariants.length)];
-            }
-          }
-          // fallback na původní messageTemplate
-          const message = variant ? variant.messageTemplate : a.messageTemplate;
-          if (a.channel === 'in-app') {
-            const Notification = require('../models/Notification');
-            await Notification.create({
-              user: this._id,
-              type: 'followup',
-              message,
-              variant: variant?.label,
-              createdAt: new Date()
-            });
-          }
-          // TODO: email, push, další kanály
-        }
-      }
-    } catch (e) { /* ignore */ }
-  }
+  // Pro testovatelnost: předáváme _isModifiedAiSegment a _isNew (jinak použijeme this.isModified/this.isNew)
+  this._isModifiedAiSegment = typeof this._isModifiedAiSegment !== 'undefined' ? this._isModifiedAiSegment : this.isModified('aiSegment');
+  this._isNew = typeof this._isNew !== 'undefined' ? this._isNew : this.isNew;
+  await userPreSaveLogic(this);
   if (!this.isModified('passwordHash')) return next();
   try {
     const salt = await bcrypt.genSalt(10);
@@ -141,4 +101,4 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = registerModel('User', userSchema);

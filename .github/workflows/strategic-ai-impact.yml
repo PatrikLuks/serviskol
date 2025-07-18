@@ -1,0 +1,30 @@
+name: AI & Automation Impact Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1' # Každé pondělí v 9:00
+
+jobs:
+  ai-impact-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+      - name: Run AI & Automation Impact Report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/ai_impact_report.js
+        working-directory: ./backend
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-impact-report
+          path: backend/reports/ai_impact_report-*.md

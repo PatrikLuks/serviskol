@@ -6,5 +6,6 @@ module.exports = {
       lines: 70,
       statements: 70
     }
-  }
+  },
+  setupFilesAfterEnv: ['./tests/setup.js'],
 };

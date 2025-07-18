@@ -2,6 +2,9 @@ const Notification = require('../models/Notification');
 
 // Vrací statistiky efektivity follow-upů podle varianty
 async function getVariantStats(segment, userIds) {
+  if (!userIds || userIds.length === 0) {
+    return {};
+  }
   // Najdi všechny notifikace typu followup pro dané uživatele
   const notifs = await Notification.find({ user: { $in: userIds }, type: 'followup' }).lean();
   // Mapování: { variant: { total, stillIn, left } }

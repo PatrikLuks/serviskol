@@ -1,0 +1,25 @@
+name: Sync audit checklists to GitHub Issues
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * 1' # Každé pondělí v 7:00
+
+jobs:
+  sync-audit-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+      - name: Run sync script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/ai_sync_audit_checklists_to_issues.js
+        working-directory: ./backend

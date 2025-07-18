@@ -141,6 +141,7 @@ import GovernanceSelfTest from '../components/GovernanceSelfTest';
 import LastAutomatedRiskResponse from '../components/LastAutomatedRiskResponse';
 import AISecurityAnalysis from '../components/AISecurityAnalysis';
 import SecurityAudit from '../components/SecurityAudit';
+import ExecutiveSummaryPanel from '../components/ExecutiveSummaryPanel';
 
 import { useState, useEffect } from 'react';
 import PromptForm from '../components/PromptForm';
@@ -198,6 +199,8 @@ import LastEscalationStatus from '../components/LastEscalationStatus';
           </div>
         </div>
 
+        <ExecutiveSummaryPanel />
+
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
           <PromptForm onResult={setResult} />
         </div>
@@ -248,6 +251,7 @@ import LastEscalationStatus from '../components/LastEscalationStatus';
         <div className="bg-lime-100 dark:bg-lime-900 rounded-lg shadow p-4 mb-6">
           <BestPracticesReport />
         </div>
+import ComplianceReportPanel from '../components/ComplianceReportPanel';
 
         <div className="bg-cyan-100 dark:bg-cyan-900 rounded-lg shadow p-4 mb-6">
           <InnovationTrendsReport />
@@ -306,3 +310,6 @@ import LastEscalationStatus from '../components/LastEscalationStatus';
       </div>
     </div>
   );
+};
+
+export default Dashboard;

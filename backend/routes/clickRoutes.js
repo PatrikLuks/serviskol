@@ -4,8 +4,9 @@ const { auditLog } = require('../middleware/auditLog');
 const { auth } = require('../middleware/auth');
 
 // GET /api/click?faq=...&campaign=...&redirect=...
-const Campaign = require('../models/Campaign');
-const User = require('../models/User');
+const { getModel } = require('../db');
+const Campaign = getModel('Campaign');
+const User = getModel('User');
 router.get('/', auth, async (req, res) => {
   const { faq, campaign, redirect, variant } = req.query;
   const user = req.user;

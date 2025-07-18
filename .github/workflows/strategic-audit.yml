@@ -1,0 +1,47 @@
+name: Strategic Audit & Reporting
+on:
+  schedule:
+    - cron: '0 8 * * 1' # každé pondělí v 8:00
+  workflow_dispatch:
+jobs:
+  strategic-audit:
+    name: Strategic Audit & Reporting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Security audit
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node backend/scripts/ai_audit_rights_and_incidents.js
+      - name: Onboarding audit
+        run: node backend/scripts/ai_onboarding_healthcheck.js
+      - name: Performance audit
+        run: node backend/scripts/ai_resilience_report.js
+      - name: Process weaknesses prediction
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node backend/scripts/ai_predict_process_weaknesses.js
+      - name: Incident & trend report
+        run: node backend/scripts/ai_issues_status_report.js
+      - name: Upload audit reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: strategic-audit-reports
+          path: backend/reports/*.md
+      - name: Slack notification (summary)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "text": "*Strategic Audit & Reporting* :bar_chart:\nNové reporty a doporučení jsou v backend/reports. Zkontrolujte Issues pro akční kroky!"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

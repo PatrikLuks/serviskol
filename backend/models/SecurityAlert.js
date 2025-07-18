@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const SecurityAlertSchema = new mongoose.Schema({
   type: { type: String, required: true }, // e.g. 'role-change', 'suspicious-login', 'failed-login', 'privilege-escalation'
@@ -10,4 +10,4 @@ const SecurityAlertSchema = new mongoose.Schema({
   readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
 
-module.exports = mongoose.model('SecurityAlert', SecurityAlertSchema);
+module.exports = registerModel('SecurityAlert', SecurityAlertSchema);

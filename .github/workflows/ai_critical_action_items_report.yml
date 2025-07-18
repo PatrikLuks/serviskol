@@ -1,0 +1,38 @@
+name: AI Critical Action Items Report
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-ai-report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/scripts
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: cd ../.. && npm install
+      - name: Run AI critical action items report script
+        run: node ai_critical_action_items_report.js
+
+      - name: Send markdown report by email
+        uses: mattdavis0351/send-email@v1
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: 'ServisKol – Souhrn kritických nerealizovaných úkolů'
+          to: ${{ secrets.REPORT_EMAIL_TO }}
+          from: ${{ secrets.REPORT_EMAIL_FROM }}
+          body: ${{ steps.get_report.outputs.report_body }}
+        env:
+          EMAIL_REPORT_PATH: ../../reports/critical_action_items_summary.md

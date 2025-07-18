@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const AuditLog = require('../models/AuditLog');
-const User = require('../models/User');
+const { getModel } = require('../db');
+const AuditLog = getModel('AuditLog');
+const User = getModel('User');
 
 // GET /api/bi/followup-effectiveness?segment=riziko_odchodu&from=2025-01-01&to=2025-07-13
 router.get('/followup-effectiveness', async (req, res) => {

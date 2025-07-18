@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const AuditLog = require('../models/AuditLog');
-const SecurityAlert = require('../models/SecurityAlert');
-const User = require('../models/User');
+const { getModel } = require('../db');
+const AuditLog = getModel('AuditLog');
+const SecurityAlert = getModel('SecurityAlert');
+const User = getModel('User');
 const { Configuration, OpenAIApi } = require('openai');
 
 // GET /api/admin/ai-security-analysis

@@ -1,5 +1,6 @@
 const express = require('express');
-const FollowupAutomation = require('../models/FollowupAutomation');
+const { getModel } = require('../db');
+const FollowupAutomation = getModel('FollowupAutomation');
 const { Configuration, OpenAIApi } = require('openai');
 const router = express.Router();
 

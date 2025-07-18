@@ -1,7 +1,8 @@
 // Endpoint pro automatické vyhodnocení vítěze A/B testu a možnost rozeslat vítěze všem
 const express = require('express');
 const router = express.Router();
-const Campaign = require('../models/Campaign');
+const { getModel } = require('../db');
+const Campaign = getModel('Campaign');
 
 // Automaticky označí vítěze podle CTR a/nebo rozesílá vítěze všem
 router.post('/ab-followup-select-winner', async (req, res) => {

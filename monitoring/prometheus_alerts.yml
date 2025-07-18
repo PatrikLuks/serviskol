@@ -10,6 +10,35 @@ groups:
       summary: "Backend není dostupný"
       description: "Backend instance je nedostupná déle než 2 minuty."
 
+  - name: servis-frontend-alerts
+    rules:
+    - alert: FrontendDown
+      expr: up{job="serviskol-frontend"} == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Frontend není dostupný"
+        description: "Frontend instance je nedostupná déle než 2 minuty."
+
+    - alert: FrontendBuildError
+      expr: frontend_build_status{job="serviskol-frontend"} == 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Chyba buildu frontendové aplikace"
+        description: "Frontend build selhal nebo je v chybovém stavu déle než 5 minut."
+
+    - alert: FrontendHighLatency
+      expr: histogram_quantile(0.95, sum(rate(frontend_request_duration_seconds_bucket{job="serviskol-frontend"}[5m])) by (le)) > 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Vysoká latence frontendové aplikace"
+        description: "95. percentil latence požadavků na frontend je vyšší než 1s po dobu 5 minut."
+
   - alert: BackendHighErrorRate
     expr: rate(http_requests_total{job="serviskol-backend",status=~"5.."}[5m]) > 0.05
     for: 5m

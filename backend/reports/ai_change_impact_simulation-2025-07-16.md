@@ -1,0 +1,1 @@
+Nepodařilo se vygenerovat AI Change Impact Simulation Report. Zkontrolujte konfiguraci OpenAI API a vstupní data.

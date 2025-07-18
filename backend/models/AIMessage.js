@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const aiMessageSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -9,4 +9,4 @@ const aiMessageSchema = new mongoose.Schema({
   feedback: { type: String }
 });
 
-module.exports = mongoose.model('AIMessage', aiMessageSchema);
+module.exports = registerModel('AIMessage', aiMessageSchema);

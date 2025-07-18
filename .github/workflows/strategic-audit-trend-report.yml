@@ -1,0 +1,30 @@
+name: Audit Trend Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 7 * * 1' # Každé pondělí v 7:30
+
+jobs:
+  audit-trend-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+      - name: Run audit trend report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/ai_audit_trend_report.js
+        working-directory: ./backend
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-trend-report
+          path: backend/reports/audit_trend_report.md

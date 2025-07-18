@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Reward, LeaderboardEntry } = require('../models/Gamification');
+const { getModel } = require('../db');
 const { auth } = require('../middleware/auth');
-const User = require('../models/User');
+const Reward = getModel('Reward');
+const LeaderboardEntry = getModel('LeaderboardEntry');
+const User = getModel('User');
 
 // GET /api/gamification/rewards - seznam odměn
 router.get('/rewards', auth, async (req, res) => {

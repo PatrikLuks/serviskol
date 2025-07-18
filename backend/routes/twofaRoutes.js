@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
-const User = require('../models/User');
+const { getModel } = require('../db');
+const User = getModel('User');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 const { auditLog } = require('../middleware/auditLog');

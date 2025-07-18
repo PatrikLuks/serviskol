@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const { getModel } = require('../db');
+const User = getModel('User');
 const AuditLog = require('../models/AuditLog');
 const SecurityAlert = require('../models/SecurityAlert');
 

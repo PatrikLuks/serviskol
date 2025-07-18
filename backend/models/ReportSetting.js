@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+
+const { mongoose, registerModel } = require('../db');
 
 const ReportSettingSchema = new mongoose.Schema({
   emails: [String], // příjemci
@@ -24,4 +25,4 @@ ReportSettingSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('ReportSetting', ReportSettingSchema);
+module.exports = registerModel('ReportSetting', ReportSettingSchema);

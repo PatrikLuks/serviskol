@@ -1,56 +1,53 @@
+const express = require('express');
+const router = express.Router();
+const adminService = require('../services/adminService');
+const { auth } = require('../middleware/auth');
+
 // Simulace dopadů změn v procesech (change impact analysis)
-router.post('/change-impact-simulation', async (req, res) => {
+router.post('/change-impact-simulation', auth, async (req, res) => {
   try {
-    const user = req.user;
-    if (!user || !user.permissions || !user.permissions.includes('governance:changeimpact')) {
-      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
-    }
-    const changeimpact = require('../scripts/ai_change_impact_simulation');
-    await changeimpact.main();
-    res.json({ ok: true, message: 'AI Change Impact Simulation Report byl vygenerován.' });
+    const message = await adminService.generateChangeImpactReport(req.user);
+    res.json({ ok: true, message });
   } catch (e) {
+    if (e.message === 'Nedostatečná oprávnění') {
+      return res.status(403).json({ error: e.message });
+    }
     res.status(500).json({ error: 'Chyba při generování change impact simulation reportu', detail: e.message });
   }
 });
 // Predikce slabých míst v procesech na základě audit logů, incidentů a feedbacku
-router.post('/predict-process-weaknesses', async (req, res) => {
+router.post('/predict-process-weaknesses', auth, async (req, res) => {
   try {
-    const user = req.user;
-    if (!user || !user.permissions || !user.permissions.includes('governance:weakness')) {
-      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
-    }
-    const weakness = require('../scripts/ai_predict_process_weaknesses');
-    await weakness.main();
-    res.json({ ok: true, message: 'AI Process Weakness Prediction Report byl vygenerován.' });
+    const message = await adminService.generateProcessWeaknessReport(req.user);
+    res.json({ ok: true, message });
   } catch (e) {
+    if (e.message === 'Nedostatečná oprávnění') {
+      return res.status(403).json({ error: e.message });
+    }
     res.status(500).json({ error: 'Chyba při generování weakness prediction reportu', detail: e.message });
   }
 });
 // Sentiment analýza uživatelské zpětné vazby a incidentů
-router.post('/sentiment-feedback-analysis', async (req, res) => {
+router.post('/sentiment-feedback-analysis', auth, async (req, res) => {
   try {
-    const user = req.user;
-    if (!user || !user.permissions || !user.permissions.includes('governance:sentiment')) {
-      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
-    }
-    const sentiment = require('../scripts/ai_sentiment_feedback_analysis');
-    await sentiment.main();
-    res.json({ ok: true, message: 'AI Sentiment Feedback Analysis Report byl vygenerován.' });
+    const message = await adminService.generateSentimentFeedbackReport(req.user);
+    res.json({ ok: true, message });
   } catch (e) {
+    if (e.message === 'Nedostatečná oprávnění') {
+      return res.status(403).json({ error: e.message });
+    }
     res.status(500).json({ error: 'Chyba při generování sentiment analysis reportu', detail: e.message });
   }
 });
 // Report trendů v adopci inovací a automatizací
-router.post('/innovation-adoption-trends', async (req, res) => {
+router.post('/innovation-adoption-trends', auth, async (req, res) => {
   try {
-    const user = req.user;
-    if (!user || !user.permissions || !user.permissions.includes('governance:adoption')) {
-      return res.status(403).json({ error: 'Nedostatečná oprávnění' });
-    }
-    const adoption = require('../scripts/ai_innovation_adoption_trends');
-    await adoption.main();
-    res.json({ ok: true, message: 'AI Innovation Adoption Trends Report byl vygenerován.' });
+    const message = await adminService.generateInnovationAdoptionReport(req.user);
+    res.json({ ok: true, message });
   } catch (e) {
+    if (e.message === 'Nedostatečná oprávnění') {
+      return res.status(403).json({ error: e.message });
+    }
     res.status(500).json({ error: 'Chyba při generování adoption trends reportu', detail: e.message });
   }
 });
@@ -926,7 +923,8 @@ router.post('/siem-export', async (req, res) => {
     const { type, from, to } = req.body;
     const result = await exportToSIEM({ type, from, to });
     // Audit log
-    const AuditLog = require('../models/AuditLog');
+    const { getModel } = require('../db');
+    const AuditLog = getModel('AuditLog');
     await AuditLog.create({
       type: 'siem-export',
       action: `Export do SIEM (${type})`,
@@ -974,7 +972,8 @@ router.get('/audit-log/export', async (req, res) => {
     if (!user || !user.permissions || !user.permissions.includes('governance:export')) {
       return res.status(403).json({ error: 'Nedostatečná oprávnění' });
     }
-    const AuditLog = require('../models/AuditLog');
+    const { getModel } = require('../db');
+    const AuditLog = getModel('AuditLog');
     const { from, to, type, userEmail, format } = req.query;
     const filter = {};
     if (from || to) {
@@ -1073,7 +1072,8 @@ router.get('/governance-selftest', async (req, res) => {
 // Poslední automatizovaná reakce na vysoké riziko
 router.get('/last-automated-risk-response', async (req, res) => {
   try {
-    const AuditLog = require('../models/AuditLog');
+    const { getModel } = require('../db');
+    const AuditLog = getModel('AuditLog');
     const log = await AuditLog.findOne({ type: 'ai-incident-risk' }).sort({ createdAt: -1 }).lean();
     res.json(log || {});
   } catch (e) {
@@ -1110,8 +1110,7 @@ router.get('/governance-report/export', async (req, res) => {
     res.status(500).json({ error: 'Chyba při exportu governance reportu' });
   }
 });
-const express = require('express');
-const router = express.Router();
+
 const generateGovernanceReport = require('../scripts/ai-governance-report');
 // Governance report endpoint
 router.get('/governance-report', async (req, res) => {

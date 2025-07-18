@@ -1,1 +1,33 @@
 2025-07-15T13:40:16.302Z PUSH OK e@e.cz T
+2025-07-16T17:27:41.888Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T17:27:41.896Z PUSH OK user@serviskol.cz Push titulek
+2025-07-16T17:31:03.461Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T17:31:03.469Z PUSH OK user@serviskol.cz Push titulek
+2025-07-16T17:31:29.366Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T17:32:02.863Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T17:32:26.217Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T17:39:50.178Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T17:43:08.317Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:04:49.240Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:05:29.396Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:19:53.811Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:26:52.380Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:26:52.383Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:26:52.391Z PUSH OK user@serviskol.cz No email admin
+2025-07-16T18:26:52.438Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:27:30.819Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:27:30.822Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:27:30.831Z PUSH OK user@serviskol.cz No email admin
+2025-07-16T18:27:30.848Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:35:39.864Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:35:39.874Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:35:39.882Z PUSH OK user@serviskol.cz No email admin
+2025-07-16T18:35:39.906Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:37:09.076Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:37:09.077Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:37:09.081Z PUSH OK user@serviskol.cz No email admin
+2025-07-16T18:37:09.093Z PUSH OK user@serviskol.cz Test alert
+2025-07-16T18:45:17.117Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:45:17.119Z PUSH OK user@serviskol.cz Multi admin alert
+2025-07-16T18:45:17.125Z PUSH OK user@serviskol.cz No email admin
+2025-07-16T18:45:17.143Z PUSH OK user@serviskol.cz Test alert

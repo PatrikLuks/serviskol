@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { Configuration, OpenAIApi } = require('openai');
 const Notification = require('../models/Notification');
-const User = require('../models/User');
+const { getModel } = require('../db');
+const User = getModel('User');
 
 // POST /api/bi/followup-predict-best-variant
 router.post('/followup-predict-best-variant', async (req, res) => {

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const AuditLog = require('../models/AuditLog');
+const { getModel } = require('../db');
+const AuditLog = getModel('AuditLog');
 const SecurityAlert = require('../models/SecurityAlert');
 const { sendSlackNotification } = require('../utils/slackNotifier');
 const { setLastEscalation } = require('../utils/escalationState');

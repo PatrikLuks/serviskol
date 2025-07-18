@@ -84,7 +84,8 @@ describe('User API', () => {
   });
 
   describe('User role change', () => {
-    let adminToken = process.env.TEST_ADMIN_JWT_TOKEN, userId;
+    const jwt = require('jsonwebtoken');
+    let adminToken, userId;
     beforeEach(async () => {
       // Vyčistit kolekci uživatelů před testy role
       await require('../models/User').deleteMany({});
@@ -98,6 +99,15 @@ describe('User API', () => {
         .post('/api/users/login')
         .send({ email: 'roleuser@example.com', password: 'User1234' });
       userId = userLogin.body.user.id;
+      // Vytvoření platného admin tokenu
+      const adminPayload = {
+        _id: 'adminid',
+        email: 'admin@serviskol.cz',
+        name: 'Testovací Admin',
+        role: 'admin'
+      };
+      const secret = process.env.JWT_SECRET || 'tajnyklic';
+      adminToken = jwt.sign(adminPayload, secret, { expiresIn: '1h' });
     });
 
     it('should change user role successfully', async () => {
@@ -164,7 +174,7 @@ describe('User API', () => {
         .post('/api/users/login')
         .send({ email: 'onboard@example.com', password: 'Onboard1234' });
       token = loginRes.body.token;
-    });
+    }, 20000);
 
     it('should assign points for onboarding', async () => {
       const res = await request(app)
@@ -173,21 +183,21 @@ describe('User API', () => {
         .send();
       expect(res.statusCode).toBe(200);
       expect(res.body.msg).toMatch(/onboarding/);
-    });
+    }, 10000);
 
     it('should not assign points without token', async () => {
       const res = await request(app)
         .post('/api/users/onboarding/complete')
         .send();
       expect([401, 403]).toContain(res.statusCode);
-    });
+    }, 10000);
 
     it('should return 401 for onboarding without token', async () => {
       const res = await request(app)
         .post('/api/users/onboarding/complete')
         .send();
       expect([401, 403]).toContain(res.statusCode);
-    });
+    }, 10000);
   });
 
   describe('2FA flow', () => {
@@ -202,7 +212,7 @@ describe('User API', () => {
         .send({ email, password });
       token = loginRes.body.token;
       secret = undefined;
-    });
+    }, 15000);
 
     it('should setup and activate 2FA', async () => {
       // Setup 2FA

@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 const request = require('supertest');
 const app = require('../server');
 const mongoose = require('mongoose');
@@ -19,9 +20,19 @@ jest.mock('openai', () => {
 });
 
 // Pomocná funkce pro získání JWT tokenu (případně upravte podle svého auth systému)
+
+const jwt = require('jsonwebtoken');
 const getToken = async () => {
-  // TODO: Implementujte získání platného JWT tokenu pro testovacího uživatele
-  return process.env.TEST_JWT_TOKEN || '';
+  // Vytvoř platný JWT token pro testovacího uživatele s rolí 'admin'
+  const payload = {
+    _id: '507f1f77bcf86cd799439011',
+    id: '507f1f77bcf86cd799439011',
+    email: 'test@serviskol.cz',
+    name: 'Testovací Admin',
+    role: 'admin'
+  };
+  const secret = process.env.JWT_SECRET || 'tajnyklic';
+  return jwt.sign(payload, secret, { expiresIn: '1h' });
 };
 
 describe('AI Routes', () => {
@@ -54,7 +65,7 @@ describe('AI Routes', () => {
   });
 
   it('POST /api/ai/rate - uloží hodnocení', async () => {
-    // Nejprve vytvoříme zprávu
+    // Nejprve vytvoříme zprávu s userId odpovídajícím JWT tokenu (ObjectId)
     const msg = await AIMessage.create({ userId: '507f1f77bcf86cd799439011', message: 'test', reply: 'test' });
     const res = await request(app)
       .post('/api/ai/rate')

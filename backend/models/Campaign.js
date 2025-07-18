@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const variantSchema = new mongoose.Schema({
   label: { type: String, required: true }, // např. "A", "B"
@@ -24,4 +24,4 @@ const campaignSchema = new mongoose.Schema({
   type: { type: String, enum: ['manual', 'auto'], default: 'manual' }
 });
 
-module.exports = mongoose.model('Campaign', campaignSchema);
+module.exports = registerModel('Campaign', campaignSchema);

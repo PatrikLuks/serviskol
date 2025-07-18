@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const AuditLogSchema = new mongoose.Schema({
   action: { type: String, required: true },
@@ -8,4 +8,4 @@ const AuditLogSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('AuditLog', AuditLogSchema);
+module.exports = registerModel('AuditLog', AuditLogSchema);

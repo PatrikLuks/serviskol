@@ -1,0 +1,32 @@
+name: Security & Resilience Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 8 * * 1' # Každé pondělí v 8:30
+
+jobs:
+  security-resilience-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+      - name: Run security & resilience audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/ai_security_resilience_audit.js
+        working-directory: ./backend
+      - name: Commit & push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'Automatická aktualizace bezpečnostních a resilience checklistů'
+          branch: main
+          file_pattern: |
+            backend/onboarding-lessons-learned.md

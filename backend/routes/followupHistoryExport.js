@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const Notification = require('../models/Notification');
-const User = require('../models/User');
+const { getModel } = require('../db');
+const Notification = getModel('Notification');
+const User = getModel('User');
 const { Parser } = require('json2csv');
 
 // GET /api/bi/followup-history?segment=...&from=...&to=...&format=csv|json

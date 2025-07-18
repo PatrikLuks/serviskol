@@ -1,6 +1,7 @@
 const express = require('express');
-const FollowupAutomation = require('../models/FollowupAutomation');
-const AuditLog = require('../models/AuditLog');
+const { getModel } = require('../db');
+const FollowupAutomation = getModel('FollowupAutomation');
+const AuditLog = getModel('AuditLog');
 const router = express.Router();
 
 // POST /api/bi/alerts/activate-variant

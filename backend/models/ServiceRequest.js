@@ -1,5 +1,5 @@
 // ServiceRequest model pro MongoDB (Mongoose)
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const serviceRequestSchema = new mongoose.Schema({
   bikeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bike', required: true },
@@ -23,4 +23,4 @@ const serviceRequestSchema = new mongoose.Schema({
   priceEstimate: Number
 });
 
-module.exports = mongoose.model('ServiceRequest', serviceRequestSchema);
+module.exports = registerModel('ServiceRequest', serviceRequestSchema);

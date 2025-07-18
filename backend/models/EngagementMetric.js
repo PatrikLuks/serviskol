@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const EngagementMetricSchema = new mongoose.Schema({
   date: { type: Date, required: true },
@@ -11,4 +11,4 @@ const EngagementMetricSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('EngagementMetric', EngagementMetricSchema);
+module.exports = registerModel('EngagementMetric', EngagementMetricSchema);

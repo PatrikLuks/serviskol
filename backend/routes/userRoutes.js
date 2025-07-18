@@ -3,7 +3,8 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { validateRegister, validateLogin } = require('../middleware/validateUser');
 const { auth } = require('../middleware/auth');
-const User = require('../models/User');
+const { getModel } = require('../db');
+const User = getModel('User');
 const { LeaderboardEntry } = require('../models/Gamification');
 
 // Registrace

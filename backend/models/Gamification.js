@@ -1,5 +1,5 @@
 // Model pro gamifikaci: odměny, úrovně, žebříčky
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const rewardSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -17,6 +17,6 @@ const leaderboardEntrySchema = new mongoose.Schema({
 });
 
 module.exports = {
-  Reward: mongoose.model('Reward', rewardSchema),
-  LeaderboardEntry: mongoose.model('LeaderboardEntry', leaderboardEntrySchema)
+  Reward: registerModel('Reward', rewardSchema),
+  LeaderboardEntry: registerModel('LeaderboardEntry', leaderboardEntrySchema)
 };

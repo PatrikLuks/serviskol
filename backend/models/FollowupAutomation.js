@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const FollowupAutomationSchema = new mongoose.Schema({
   triggerSegment: { type: String, required: true }, // např. 'riziko_odchodu'
@@ -15,4 +15,4 @@ const FollowupAutomationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('FollowupAutomation', FollowupAutomationSchema);
+module.exports = registerModel('FollowupAutomation', FollowupAutomationSchema);

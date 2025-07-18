@@ -28,10 +28,10 @@
     "html2canvas": "^1.4.1",
     "json2csv": "^6.0.0-alpha.2",
     "jspdf": "^3.0.1",
-    "markdown-pdf": "^11.0.0",
     "multer": "^2.0.1",
     "nodemailer": "^7.0.5",
     "pdfkit": "^0.17.1",
+    "posthog-node": "^5.5.1",
     "qrcode": "^1.5.4",
     "react-ga4": "^2.1.0",
     "react-toastify": "^11.0.5",
@@ -40,6 +40,7 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "jest": "^30.0.4",
+    "mongodb-memory-server": "^10.1.4",
     "supertest": "^7.1.3"
   }
 }

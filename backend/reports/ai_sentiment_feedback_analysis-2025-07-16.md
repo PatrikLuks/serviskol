@@ -1,0 +1,1 @@
+Nepodařilo se vygenerovat AI Sentiment Feedback Analysis Report. Zkontrolujte konfiguraci OpenAI API a vstupní data.

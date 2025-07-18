@@ -1,5 +1,5 @@
 // Message model pro MongoDB (Mongoose)
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const messageSchema = new mongoose.Schema({
   fromUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -9,4 +9,4 @@ const messageSchema = new mongoose.Schema({
   attachments: [String]
 });
 
-module.exports = mongoose.model('Message', messageSchema);
+module.exports = registerModel('Message', messageSchema);

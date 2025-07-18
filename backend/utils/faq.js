@@ -1,21 +1,16 @@
-// Jednoduchý seznam FAQ pro AI doporučení
+// Základní FAQ pro AI chat ServisKol
 module.exports = [
   {
-    keywords: ['servis', 'oprava', 'rezervace'],
-    question: 'Jak si objednat servis kola?',
-    answer: 'Servis si můžete objednat přes naši aplikaci v sekci Moje kola > Objednat servis.',
-    link: 'https://serviskol.cz/faq/objednavka-servisu'
+    question: 'Jak často mám servisovat kolo?',
+    answer: 'Doporučujeme servisovat kolo alespoň jednou ročně nebo po každých 2000 km.',
+    keywords: ['servis', 'servisovat', 'údržba', 'interval'],
+    link: 'https://serviskol.cz/faq/servis'
   },
   {
-    keywords: ['řetěz', 'mazání', 'údržba'],
-    question: 'Jak správně mazat řetěz?',
-    answer: 'Řetěz doporučujeme čistit a mazat každých 200 km. Podrobný návod najdete v našem FAQ.',
-    link: 'https://serviskol.cz/faq/udrzba-retezu'
-  },
-  {
-    keywords: ['pneumatika', 'duše', 'defekt'],
-    question: 'Co dělat při defektu?',
-    answer: 'Při defektu doporučujeme použít sadu na opravu duše nebo kontaktovat náš servis.',
-    link: 'https://serviskol.cz/faq/defekt'
+    question: 'Jak rezervovat termín servisu?',
+    answer: 'Termín servisu si můžete rezervovat online v klientské zóně.',
+    keywords: ['rezervace', 'termín', 'objednat', 'rezervovat'],
+    link: 'https://serviskol.cz/faq/rezervace'
   }
 ];
+

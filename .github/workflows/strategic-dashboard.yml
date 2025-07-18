@@ -1,0 +1,51 @@
+name: Strategic Dashboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 9 * * 1' # Každé pondělí v 9:30
+
+jobs:
+  strategic-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+      - name: Run dashboard report
+        run: node scripts/ai_dashboard_report.js
+        working-directory: ./backend
+      - name: Install Puppeteer
+        run: npm install puppeteer
+        working-directory: ./backend
+      - name: Export dashboard to PDF
+        run: node scripts/ai_dashboard_export_pdf.js
+        working-directory: ./backend
+      - name: Upload dashboard artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: strategic-dashboard
+          path: |
+            backend/reports/dashboard.html
+            backend/reports/dashboard.pdf
+      - name: Install axios
+        run: npm install axios
+        working-directory: ./backend
+      - name: Send dashboard to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node scripts/ai_dashboard_send_slack.js
+        working-directory: ./backend
+      - name: Slack alert on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          echo '{"text":"❗ *Strategic Dashboard workflow selhal!*\nRepo: $GITHUB_REPOSITORY\nRun: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"}' > payload.json
+          curl -X POST -H 'Content-type: application/json' --data @payload.json "$SLACK_WEBHOOK_URL"

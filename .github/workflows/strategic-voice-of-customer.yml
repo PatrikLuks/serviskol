@@ -1,0 +1,30 @@
+name: Voice of Customer Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * 1' # Každé pondělí v 8:00
+
+jobs:
+  voice-of-customer-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
+      - name: Run voice of customer report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/ai_voice_of_customer_report.js
+        working-directory: ./backend
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-of-customer-report
+          path: backend/reports/voice_of_customer_summary-*.md

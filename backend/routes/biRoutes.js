@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { Parser } = require('json2csv');
-const AuditLog = require('../models/AuditLog');
+const { getModel } = require('../db');
+const AuditLog = getModel('AuditLog');
 
 // GET /api/bi/ai-segment-history - historie změn AI segmentu
 router.get('/ai-segment-history', requireApiKey, async (req, res) => {
@@ -14,7 +15,7 @@ router.get('/ai-segment-history', requireApiKey, async (req, res) => {
       if (from) q.createdAt.$gte = new Date(from);
       if (to) q.createdAt.$lte = new Date(to);
     }
-    const logs = await require('../models/AuditLog').find(q).sort({ createdAt: -1 }).lean();
+    const logs = await getModel('AuditLog').find(q).sort({ createdAt: -1 }).lean();
     res.json({ history: logs.map(l => ({
       time: l.createdAt,
       userId: l.performedBy,
@@ -24,8 +25,8 @@ router.get('/ai-segment-history', requireApiKey, async (req, res) => {
     res.status(500).json({ error: 'Chyba při načítání historie změn segmentu' });
   }
 });
-const Prediction = require('../models/Prediction');
-const User = require('../models/User');
+const Prediction = getModel('Prediction');
+const User = getModel('User');
 const axios = require('axios');
 // /api/bi/predictions?type=churn|followup|segment&format=csv|json&apiKey=...
 router.get('/predictions', requireApiKey, async (req, res) => {
@@ -124,7 +125,7 @@ router.get('/predictions', requireApiKey, async (req, res) => {
   }
   res.json(preds);
 });
-const EngagementMetric = require('../models/EngagementMetric');
+const EngagementMetric = getModel('EngagementMetric');
 const { captureEvent } = require('../utils/posthog');
 // /api/bi/engagement-metrics?from=YYYY-MM-DD&to=YYYY-MM-DD&format=csv|json&apiKey=...
 router.get('/engagement-metrics', requireApiKey, async (req, res) => {
@@ -170,6 +171,7 @@ router.get('/engagement-metrics', requireApiKey, async (req, res) => {
   }
   res.json(metrics);
 });
+const Segment = getModel('Segment');
 // /api/bi/segments?format=csv|json&apiKey=...
 router.get('/segments', requireApiKey, async (req, res) => {
   captureEvent(req.biUser?._id?.toString() || req.biUser?.id || 'anonymous', 'bi_export_segments', { format: req.query.format });
@@ -254,6 +256,7 @@ async function requireApiKey(req, res, next) {
   next();
 }
 
+const Campaign = getModel('Campaign');
 // /api/bi/campaigns?from=YYYY-MM-DD&to=YYYY-MM-DD&format=csv|json&apiKey=...
 router.get('/campaigns', requireApiKey, async (req, res) => {
   // Kontrola granularitních oprávnění

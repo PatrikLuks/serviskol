@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const WebhookSchema = new mongoose.Schema({
   url: { type: String, required: true },
@@ -15,4 +15,4 @@ const WebhookSchema = new mongoose.Schema({
   errorCount: { type: Number, default: 0 }
 });
 
-module.exports = mongoose.model('Webhook', WebhookSchema);
+module.exports = registerModel('Webhook', WebhookSchema);

@@ -27,7 +27,7 @@ jobs:
       - name: Run backend tests
         run: |
           cd backend
-          npm test || true
+          npm test
       - name: Install frontend dependencies
         run: |
           cd frontend
@@ -35,7 +35,7 @@ jobs:
       - name: Lint frontend
         run: |
           cd frontend
-          npm run lint || true
+          npm run lint
       - name: Build frontend
         run: |
           cd frontend
@@ -43,8 +43,16 @@ jobs:
       - name: Audit backend dependencies
         run: |
           cd backend
-          npm audit --audit-level=moderate || true
+          npm audit --audit-level=moderate
       - name: Build backend Docker image
         run: |
           cd backend
           docker build -t serviskol-backend:latest .
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && success()
+    steps:
+      - name: Deploy (placeholder)
+        run: echo "Implement deployment step here."

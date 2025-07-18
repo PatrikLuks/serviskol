@@ -1,5 +1,5 @@
 // Bike model pro MongoDB (Mongoose)
-const mongoose = require('mongoose');
+const { mongoose, registerModel } = require('../db');
 
 const componentSchema = new mongoose.Schema({
   name: String,
@@ -23,4 +23,4 @@ const bikeSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Bike', bikeSchema);
+module.exports = registerModel('Bike', bikeSchema);
