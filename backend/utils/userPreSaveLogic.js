@@ -44,8 +44,12 @@ module.exports = async function userPreSaveLogic(user, deps = {}) {
               variant: variant?.label,
               createdAt: now()
             });
+          } else if (a.channel === 'email' && user.email) {
+            // Odeslat follow-up e-mailem
+            const sendUserNotification = require('./sendUserNotification');
+            await sendUserNotification(user, 'Důležitá zpráva od ServisKol', message);
           }
-          // TODO: email, push, další kanály
+          // TODO: push, další kanály
         }
       }
     } catch (e) { /* ignore */ }
