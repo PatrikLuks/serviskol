@@ -40,24 +40,27 @@ Object.defineProperties(module.exports, {
  */
 function generateCSVReport({ stats, ctrTrendData, segmentHeatmapData, summary }) {
   let rows = [];
-  rows.push({ section: 'Statistika', key: 'Průměrné CTR', value: stats.avgCtr });
-  rows.push({ section: 'Statistika', key: 'Počet kampaní', value: stats.campaignCount });
+  stats = stats || {};
+  ctrTrendData = ctrTrendData || [];
+  segmentHeatmapData = segmentHeatmapData || [];
+  rows.push({ section: 'Statistika', key: 'Průměrné CTR', value: stats.avgCtr ?? '' });
+  rows.push({ section: 'Statistika', key: 'Počet kampaní', value: stats.campaignCount ?? '' });
   if (summary) rows.push({ section: 'AI sumarizace', key: '', value: summary });
-  if (stats.topSegments && stats.topSegments.length) {
+  if (Array.isArray(stats.topSegments) && stats.topSegments.length) {
     stats.topSegments.forEach((seg, i) => {
-      rows.push({ section: 'Top segmenty', key: `${i+1}. ${seg.region}, ${seg.ageGroup} let`, value: seg.ctr });
+      rows.push({ section: 'Top segmenty', key: `${i+1}. ${seg.region ?? ''}, ${seg.ageGroup ?? ''} let`, value: seg.ctr ?? '' });
     });
   }
-  if (ctrTrendData && ctrTrendData.length) {
+  if (Array.isArray(ctrTrendData) && ctrTrendData.length) {
     rows.push({ section: 'Trend CTR', key: 'Datum', value: 'CTR' });
     ctrTrendData.forEach(d => {
-      rows.push({ section: 'Trend CTR', key: d.date, value: d.ctr });
+      rows.push({ section: 'Trend CTR', key: d.date ?? '', value: d.ctr ?? '' });
     });
   }
-  if (segmentHeatmapData && segmentHeatmapData.length) {
+  if (Array.isArray(segmentHeatmapData) && segmentHeatmapData.length) {
     rows.push({ section: 'Heatmapa segmentů', key: 'Region, Věková skupina', value: 'CTR' });
     segmentHeatmapData.forEach(seg => {
-      rows.push({ section: 'Heatmapa segmentů', key: `${seg.region}, ${seg.ageGroup}`, value: seg.ctr });
+      rows.push({ section: 'Heatmapa segmentů', key: `${seg.region ?? ''}, ${seg.ageGroup ?? ''}`, value: seg.ctr ?? '' });
     });
   }
   const parser = new Parser({ fields: ['section', 'key', 'value'] });
@@ -91,15 +94,15 @@ async function generatePDFReport({ stats, summary, ctrTrendPng, heatmapPng }) {
   pdf.text('Základní statistiky:', 40, y);
   y += 18;
   pdf.setFontSize(12);
-  pdf.text(`Průměrné CTR: ${(stats.avgCtr*100).toFixed(2)}%`, 50, y);
+  pdf.text(`Průměrné CTR: ${stats?.avgCtr !== undefined ? (stats.avgCtr*100).toFixed(2)+'%' : ''}`, 50, y);
   y += 16;
-  pdf.text(`Počet kampaní: ${stats.campaignCount}`, 50, y);
+  pdf.text(`Počet kampaní: ${stats?.campaignCount ?? ''}`, 50, y);
   y += 16;
-  if (stats.topSegments && stats.topSegments.length) {
+  if (Array.isArray(stats?.topSegments) && stats.topSegments.length) {
     pdf.text('Top segmenty:', 50, y);
     y += 14;
     stats.topSegments.forEach((seg, i) => {
-      pdf.text(`${i+1}. ${seg.region}, ${seg.ageGroup} let – CTR: ${seg.ctr}`, 60, y);
+      pdf.text(`${i+1}. ${seg.region ?? ''}, ${seg.ageGroup ?? ''} let – CTR: ${seg.ctr ?? ''}`, 60, y);
       y += 14;
     });
   }
@@ -142,12 +145,12 @@ async function generateXLSXReport({ stats, ctrTrendData, segmentHeatmapData, sum
   ws.getCell(`A${row}`).font = { bold: true };
   row++;
   ws.getCell(`A${row}`).value = `Průměrné CTR:`;
-  ws.getCell(`B${row}`).value = stats.avgCtr;
+  ws.getCell(`B${row}`).value = stats?.avgCtr ?? '';
   row++;
   ws.getCell(`A${row}`).value = `Počet kampaní:`;
-  ws.getCell(`B${row}`).value = stats.campaignCount;
+  ws.getCell(`B${row}`).value = stats?.campaignCount ?? '';
   row++;
-  if (stats.topSegments && stats.topSegments.length) {
+  if (Array.isArray(stats?.topSegments) && stats.topSegments.length) {
     ws.getCell(`A${row}`).value = 'Top segmenty:';
     ws.getCell(`A${row}`).font = { bold: true };
     row++;
@@ -155,7 +158,7 @@ async function generateXLSXReport({ stats, ctrTrendData, segmentHeatmapData, sum
     ws.getRow(row).font = { bold: true };
     row++;
     stats.topSegments.forEach((seg, i) => {
-      ws.getRow(row).values = [i+1, seg.region, seg.ageGroup, seg.ctr];
+      ws.getRow(row).values = [i+1, seg.region ?? '', seg.ageGroup ?? '', seg.ctr ?? ''];
       row++;
     });
     row++;

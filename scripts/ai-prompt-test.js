@@ -12,7 +12,8 @@ const promptsPath = path.join(__dirname, '../prompts/prompts.json');
 function readPrompts(file) {
   try {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch {
+  } catch (e) {
+    console.error(e);
     return [];
   }
 }

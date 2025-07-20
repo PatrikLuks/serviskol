@@ -14,7 +14,8 @@ const username = process.argv[2] || 'novacek';
 function readFileSafe(file) {
   try {
     return fs.readFileSync(file, 'utf8');
-  } catch {
+  } catch (e) {
+    console.error(e);
     return '';
   }
 }

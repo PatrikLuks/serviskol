@@ -60,7 +60,7 @@ async function predictIncidentRisk() {
         createdAt: now
       });
     } catch (e) {
-      // ignore
+      console.error('Chyba při automatizované reakci na vysoké riziko incidentu:', e);
     }
   }
 

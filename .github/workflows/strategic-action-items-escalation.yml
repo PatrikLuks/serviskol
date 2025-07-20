@@ -1,0 +1,31 @@
+name: Strategic Action Items Escalation
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Každé pondělí v 6:00
+  workflow_dispatch:
+
+jobs:
+  check-critical-action-items:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Run AI check action items script
+        env:
+          SLACK_CRITICAL_CHANNEL: ${{ secrets.SLACK_CRITICAL_CHANNEL }}
+          CRITICAL_EMAIL_TO: ${{ secrets.CRITICAL_EMAIL_TO }}
+          CRITICAL_EMAIL_FROM: ${{ secrets.CRITICAL_EMAIL_FROM }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/ai_check_action_items.js

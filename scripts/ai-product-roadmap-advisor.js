@@ -10,7 +10,8 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 function readIfExists(path) {
   try {
     return fs.readFileSync(path, 'utf8');
-  } catch {
+  } catch (e) {
+    console.error(e);
     return '';
   }
 }

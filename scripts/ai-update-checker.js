@@ -19,7 +19,8 @@ function checkVSCodeExtension(ext) {
     const info = execSync(`code --list-extensions --show-versions | grep ${ext}`).toString().trim();
     const [, version] = info.split('@');
     return { ext, version };
-  } catch {
+  } catch (e) {
+    console.error(e);
     return { ext, version: 'nenainstalováno' };
   }
 }

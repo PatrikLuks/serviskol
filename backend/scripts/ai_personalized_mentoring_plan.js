@@ -56,7 +56,10 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch(e => { console.error(e); process.exit(1); });
+  main().catch(e => {
+    console.error('Chyba v AI personalized mentoring plan:', e);
+    process.exit(1);
+  });
 }
 
 module.exports = { main };

@@ -11,7 +11,8 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 function getGitLog() {
   try {
     return execSync('git log --name-only --pretty=format:"%an|%ae"', { encoding: 'utf8' });
-  } catch {
+  } catch (e) {
+    console.error(e);
     return '';
   }
 }

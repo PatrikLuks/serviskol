@@ -15,7 +15,8 @@ function getFrontendFiles() {
 function readIfExists(path) {
   try {
     return fs.readFileSync(path, 'utf8');
-  } catch {
+  } catch (e) {
+    console.error(e);
     return '';
   }
 }

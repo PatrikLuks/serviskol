@@ -13,7 +13,8 @@ const commit2 = process.argv[3] || 'HEAD';
 function getDiff(c1, c2) {
   try {
     return execSync(`git diff ${c1} ${c2} -- . ':(exclude)package-lock.json' ':(exclude)pnpm-lock.yaml'`, { encoding: 'utf8' });
-  } catch {
+  } catch (e) {
+    console.error(e);
     return '';
   }
 }

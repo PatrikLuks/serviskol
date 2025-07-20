@@ -29,16 +29,22 @@ async function simulateWhatIf(tasks) {
   if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY není nastaven');
   if (!tasks.length) return 'Všechny slabiny/backlog jsou vyřešeny.';
   const prompt = `Jsi AI strategický analytik. Zde je seznam otevřených slabin/backlogu (nerealizovaných doporučení):\n${tasks.map(t => `- ${t.title}`).join('\n')}\n\nSimuluj, jaké negativní scénáře mohou nastat, pokud zůstanou neřešené (provoz, bezpečnost, compliance, UX, reputace, růst). Navrhni konkrétní priority a mitigace. Stručně, v bodech.`;
-  const res = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model: 'gpt-4o',
-    messages: [
-      { role: 'system', content: 'Jsi AI expert na strategické simulace a risk management.' },
-      { role: 'user', content: prompt }
-    ],
-    max_tokens: 900
-  }, {
-    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-  });
+  try {
+    const res = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'Jsi AI expert na strategické simulace a risk management.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 900
+    }, {
+      headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` }
+    });
+    return res.data.choices[0].message.content;
+  } catch (e) {
+    console.error('Chyba při volání OpenAI API:', e);
+    throw e;
+  }
   return res.data.choices[0].message.content;
 }
 
