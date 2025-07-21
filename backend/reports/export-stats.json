@@ -1,0 +1,28 @@
+{
+  "total": 8,
+  "success": 4,
+  "fail": 4,
+  "lastSuccess": "2025-07-17T10:00:00Z úspěšně nahrán na S3: report-2025-07-17.txt",
+  "lastError": "2025-07-17T12:00:00Z Chyba při uploadu: ECONNREFUSED",
+  "daily": {
+    "2025-07-20": {
+      "success": 1,
+      "fail": 1
+    },
+    "2025-07-19": {
+      "success": 1,
+      "fail": 1
+    },
+    "2025-07-18": {
+      "success": 1,
+      "fail": 1
+    },
+    "2025-07-17": {
+      "success": 1,
+      "fail": 1
+    }
+  },
+  "alert": true,
+  "recentFails": 4,
+  "timestamp": "2025-07-21T11:36:41.195Z"
+}

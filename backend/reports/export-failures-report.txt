@@ -1,0 +1,11 @@
+Auditní report selhání exportů (posledních 7 dní)
+Počet selhání: 4
+
+2025-07-20T12:00:00Z Chyba při uploadu: ECONNREFUSED
+2025-07-19T12:00:00Z Chyba při uploadu: CredentialsError
+2025-07-18T12:00:00Z Chyba při uploadu: ECONNREFUSED
+2025-07-17T12:00:00Z Chyba při uploadu: ECONNREFUSED
+
+AI shrnutí a doporučení:
+Opakované chyby ECONNREFUSED (3x). Doporučujeme zkontrolovat síťové připojení a dostupnost S3 endpointu.
+Predikce: Riziko dalšího selhání je nízké (poslední den: 1, průměr: 1.00).

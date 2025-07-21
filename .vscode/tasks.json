@@ -7,5 +7,19 @@
 			"command": "npm init -y",
 			"group": "build"
 		}
+		,
+		{
+			"type": "shell",
+			"label": "CI: Test alerting & audit",
+			"command": "npm run test:alerting && npm run test:audit",
+			"group": "test",
+			"problemMatcher": ["$tsc", "$eslint-stylish"]
+		}
+			"type": "shell",
+			"label": "CI: Test alerting & audit",
+			"command": "npm run test:alerting && npm run test:audit",
+			"group": "test",
+			"problemMatcher": ["$tsc", "$eslint-stylish"]
+		}
 	]
 }

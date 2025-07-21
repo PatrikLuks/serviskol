@@ -1,3 +1,55 @@
+
+## Integrace s incident management systémem (ServiceNow)
+
+Pro automatické vytváření incidentů při kritickém selhání exportu nastavte v `.env` souboru:
+
+```
+SERVICENOW_INSTANCE=dev12345.service-now.com
+SERVICENOW_USER=uzivatel
+SERVICENOW_PASS=heslo
+```
+
+Skript `scripts/createIncidentServiceNow.js` vytvoří incident v ServiceNow. Doporučené volání při kritickém alertu:
+
+```
+node /Users/patrikluks/Applications/serviskol/backend/scripts/createIncidentServiceNow.js "Kritický alert: Opakované selhání exportů" "Systém detekoval opakované selhání exportů. Doporučujeme okamžitou kontrolu a eskalaci."
+```
+
+
+## Periodický management reporting
+
+Skript `scripts/sendWeeklyManagementReport.js` odešle shrnutí statistik, AI doporučení a ASCII graf trendu úspěšných i neúspěšných exportů na management email. Doporučené spuštění přes cron:
+
+```
+0 8 * * MON node /Users/patrikluks/Applications/serviskol/backend/scripts/sendWeeklyManagementReport.js
+```
+
+
+Pro automatizované týdenní reporty exportních statistik a AI doporučení nastavte v `.env` souboru jednu z proměnných:
+
+```
+MANAGEMENT_EMAIL=management@example.com           # Jeden email
+MANAGEMENT_EMAILS=management@example.com,ceo@example.com # Více emailů oddělených čárkou
+```
+
++Skript `scripts/sendWeeklyManagementReport.js` odešle shrnutí statistik, AI doporučení a ASCII graf trendu selhání exportů na management email. Doporučené spuštění přes cron:
++
++```
++0 8 * * MON node /Users/patrikluks/Applications/serviskol/backend/scripts/sendWeeklyManagementReport.js
++```
+
+## SMS alerty pro kritické selhání exportu
+
+Pro automatizované SMS alerty při kritickém selhání exportu nastavte následující proměnné prostředí v `.env` souboru:
+
+```
+TWILIO_ACCOUNT_SID=...      # SID vašeho Twilio účtu
+TWILIO_AUTH_TOKEN=...       # Auth token z Twilio
+TWILIO_FROM_NUMBER=+420...  # Odesílací číslo (Twilio)
+CRITICAL_ALERT_PHONE=+420... # Cílové číslo pro SMS alerty
+```
+
+Skript `scripts/sendCriticalAlertSms.js` je automaticky spouštěn při detekci kritického alertu v export logu (viz `scripts/analyzeExportLog.js`).
 # ServisKol – Backend
 
 ## Onboarding

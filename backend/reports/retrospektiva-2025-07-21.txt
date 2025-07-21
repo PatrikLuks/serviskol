@@ -1,0 +1,10 @@
+Retrospektivní report
+Počet událostí: 4
+Statistika typů událostí:
+- incident: 3
+- other: 1
+
+Graf typů událostí uložen jako: /Users/patrikluks/Applications/serviskol/backend/reports/retrospektiva-chart-2025-07-21.png
+
+AI shrnutí trendů:
+Pozorujeme zvýšený počet incidentů, doporučujeme detailní analýzu.

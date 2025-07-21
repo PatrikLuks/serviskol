@@ -1,0 +1,46 @@
+name: Strategic Tests CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+      - name: Run audit tests
+        run: cd backend && npm run test:audit
+      - name: Run reporting tests
+        run: cd backend && npm run test:alerting
+      - name: Run disaster recovery tests
+        run: cd backend && npm run test:disaster
+      - name: Run monitoring tests
+        run: cd backend && npm run test:monitoring
+      - name: Run retrospektiva tests
+        run: cd backend && npm run test:retrospektiva
+      - name: Run load tests
+        run: cd backend && npm run test:load
+      - name: Generate retrospective report
+        run: cd backend && node scripts/generateRetrospectiveReport.js
+  notify-slack:
+    needs: test
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Slack on failure
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: "❌ Strategické testy selhaly v repozitáři serviskol! Zkontrolujte CI logy."

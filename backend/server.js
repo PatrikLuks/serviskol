@@ -1,3 +1,23 @@
+// Endpoint pro exportní statistiky
+  app.get('/api/export-stats', (req, res) => {
+    const statsPath = path.join(__dirname, 'reports/export-stats.json');
+    if (fs.existsSync(statsPath)) {
+      const stats = fs.readFileSync(statsPath, 'utf-8');
+      res.type('application/json').send(stats);
+    } else {
+      res.status(404).json({ error: 'Statistiky nenalezeny.' });
+    }
+  });
+
+  // Endpoint pro stažení auditního reportu selhání exportů
+  app.get('/api/export-failures-report', (req, res) => {
+    const reportPath = path.join(__dirname, 'reports/export-failures-report.txt');
+    if (fs.existsSync(reportPath)) {
+      res.download(reportPath, 'export-failures-report.txt');
+    } else {
+      res.status(404).json({ error: 'Auditní report nenalezen.' });
+    }
+  });
 
 // Načti .env konfiguraci hned na začátku
 require('dotenv').config({ path: __dirname + '/.env' });
@@ -26,8 +46,11 @@ function createApp() {
   require('./models');
 
   const app = express();
+  const exportStatsRouter = require('./routes/exportStats');
   collectDefaultMetrics();
 
+  // Endpoint pro exportní statistiky
+  app.use('/api', exportStatsRouter);
   // Sentry konfigurace (volitelné, pouze pokud je nastaven SENTRY_DSN)
   if (process.env.SENTRY_DSN) {
     Sentry.init({

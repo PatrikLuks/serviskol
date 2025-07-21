@@ -12,6 +12,7 @@ import AnalyticsFilters from '../components/AnalyticsFilters';
 import PaymentDemo from '../components/PaymentDemo';
 import AdminApiKeyManager from '../components/AdminApiKeyManager';
 import ApiKeyAuditLogPanel from '../components/ApiKeyAuditLogPanel';
+import ExportStatsChart from '../components/ExportStatsChart';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function AdminDashboard() {
   const [filteredStats, setFilteredStats] = useState(null);
   const [error, setError] = useState('');
   const [userMetrics, setUserMetrics] = useState(null);
+  const [exportStats, setExportStats] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -48,6 +50,20 @@ export default function AdminDashboard() {
       setUserMetrics(data);
     };
     if (user?.role === 'admin' || user?.role === 'mechanic') fetchUserMetrics();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchExportStats = async () => {
+      try {
+        const res = await fetch('/api/export-stats');
+        if (!res.ok) throw new Error('Chyba načítání statistik exportů');
+        const data = await res.json();
+        setExportStats(data);
+      } catch (err) {
+        setExportStats({ error: err.message });
+      }
+    };
+    if (user?.role === 'admin') fetchExportStats();
   }, [user]);
 
   const handleFilter = async (params) => {
@@ -201,6 +217,59 @@ export default function AdminDashboard() {
                 <ApiKeyAuditLogPanel />
                 <WebhookManagerPanel />
               </div>
+              <h2 className="text-lg font-semibold mt-6 mb-2">Exportní statistiky</h2>
+              {exportStats ? (
+                exportStats.error ? <div className="text-red-500">{exportStats.error}</div> :
+                <>
+                  {exportStats.alert && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                      <b>ALERT:</b> Za posledních 7 dní bylo zaznamenáno {exportStats.recentFails} selhání exportů! Doporučujeme okamžitou kontrolu systému.<br />
+                      <ul className="mt-2 list-disc ml-4">
+                        <li>Zkontrolujte <a href="/admin/audit-log" className="underline text-blue-700">audit log</a> exportů.</li>
+                        <li>Proveďte troubleshooting podle <a href="/docs/export-checklist" className="underline text-blue-700">checklistu</a>.</li>
+                        <li>Kontaktujte technickou podporu, pokud problém přetrvává.</li>
+                      </ul>
+                      <a href="/api/export-failures-report" download className="inline-block mt-3 px-4 py-2 bg-red-600 text-white rounded font-semibold">Stáhnout auditní report selhání exportů</a>
+                      <AuditAiSummary />
+                      {exportStats.escalation && exportStats.escalation.needed && (
+                        <div className="mt-4 p-2 bg-orange-100 border border-orange-400 text-orange-900 rounded flex items-center">
+                          <span className="mr-2">🔔</span>
+                          <b>Eskalace aktivována:</b> {exportStats.escalation.reason || 'Kritický alert byl eskalován (SMS/email)'}
+                        </div>
+                      )}
+                    </div>
+                  )}
+// Komponenta pro zobrazení AI shrnutí a doporučení z auditního reportu
+function AuditAiSummary() {
+  const [summary, setSummary] = React.useState('');
+  React.useEffect(() => {
+    fetch('/api/export-failures-report')
+      .then(res => res.text())
+      .then(text => {
+        const aiStart = text.indexOf('AI shrnutí a doporučení:');
+        if (aiStart !== -1) {
+          setSummary(text.slice(aiStart));
+        }
+      });
+  }, []);
+  if (!summary) return null;
+  return (
+    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-400 text-yellow-900 rounded">
+      <b>AI shrnutí a doporučení:</b>
+      <pre className="whitespace-pre-wrap text-sm mt-2">{summary}</pre>
+    </div>
+  );
+}
+                  <ul className="list-disc ml-6 mb-4">
+                    <li><b>Celkem exportů:</b> {exportStats.total}</li>
+                    <li><b>Úspěšné exporty:</b> {exportStats.success}</li>
+                    <li><b>Selhání exportu:</b> {exportStats.fail}</li>
+                    <li><b>Poslední úspěch:</b> {exportStats.lastSuccess || '–'}</li>
+                    <li><b>Poslední chyba:</b> {exportStats.lastError || '–'}</li>
+                  </ul>
+                  <ExportStatsChart daily={exportStats.daily} />
+                </>
+              ) : <div>Načítám exportní statistiky...</div>}
             </>
           )}
         </>

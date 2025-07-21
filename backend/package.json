@@ -7,7 +7,13 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .js",
-    "loadtest": "k6 run tests/loadtest.k6.js"
+    "loadtest": "k6 run tests/loadtest.k6.js",
+    "test:audit": "jest backend/scripts/audit.test.js",
+    "test:alerting": "jest backend/utils/reporting.test.js",
+    "test:disaster": "jest backend/scripts/disasterRecovery.test.js",
+    "test:monitoring": "jest backend/utils/monitoring.test.js",
+    "test:retrospektiva": "jest backend/utils/retrospektiva.test.js",
+    "test:load": "jest backend/scripts/load.test.js"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",
@@ -18,6 +24,7 @@
   "dependencies": {
     "@sentry/node": "^9.36.0",
     "@swc/helpers": "^0.5.17",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
