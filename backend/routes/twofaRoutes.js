@@ -22,7 +22,12 @@ router.post('/setup', auth, async (req, res) => {
 router.post('/verify', auth, async (req, res) => {
   const { token } = req.body;
   const user = await User.findById(req.user.id);
-  if (!user.twoFactorSecret) return res.status(400).json({ msg: '2FA není inicializováno.' });
+  if (!user) {
+    return res.status(401).json({ msg: 'Uživatel nenalezen.' });
+  }
+  if (!user.twoFactorSecret) {
+    return res.status(400).json({ msg: '2FA není inicializováno.' });
+  }
   const verified = speakeasy.totp.verify({
     secret: user.twoFactorSecret,
     encoding: 'base32',

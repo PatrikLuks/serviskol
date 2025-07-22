@@ -2,6 +2,14 @@ const express = require('express');
 const request = require('supertest');
 const { validateRegister, validateLogin } = require('../middleware/validateUser');
 
+let app;
+beforeEach(() => {
+  app = express();
+  app.use(express.json());
+  app.post('/register', validateRegister, (req, res) => res.json({ ok: true }));
+  app.post('/login', validateLogin, (req, res) => res.json({ ok: true }));
+});
+
 describe('validateUser middleware', () => {
   let app;
   beforeEach(() => {

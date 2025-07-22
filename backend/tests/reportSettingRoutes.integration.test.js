@@ -64,7 +64,7 @@ describe('ReportSetting API integration', () => {
         .post('/api/admin/report-settings')
         .set('Authorization', 'Bearer ' + token)
         .send({ emails: ['a@b.cz'], frequency: 'weekly', enabled: true })
-        .expect(200);
+        .expect(201);
       expect(res.body).toHaveProperty('emails');
       expect(res.body).toHaveProperty('frequency', 'weekly');
     });

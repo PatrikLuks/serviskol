@@ -2,6 +2,12 @@ const request = require('supertest');
 const express = require('express');
 const healthRoutes = require('../routes/healthRoutes');
 
+let app;
+beforeEach(() => {
+  app = express();
+  app.use('/api/health', healthRoutes);
+});
+
 describe('Health-check endpoint', () => {
   let app;
   beforeAll(() => {

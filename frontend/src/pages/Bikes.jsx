@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 
+
 export default function Bikes() {
   const [bikes, setBikes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,11 +11,17 @@ export default function Bikes() {
   const [formError, setFormError] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
+  const token = localStorage.getItem('token');
+
   const fetchBikes = async () => {
     setLoading(true);
     setError('');
+    if (!token) {
+      setError('Pro zobrazení kol se prosím přihlaste.');
+      setLoading(false);
+      return;
+    }
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch('/api/bikes', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -30,6 +37,7 @@ export default function Bikes() {
 
   useEffect(() => {
     fetchBikes();
+    // eslint-disable-next-line
   }, []);
 
   const handleFormChange = (e) => {
@@ -70,58 +78,71 @@ export default function Bikes() {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Moje kola</h2>
       {loading && <div>Načítám...</div>}
-      {error && <div className="text-red-500">{error}</div>}
-      <ul className="space-y-2">
-        {bikes.map(bike => (
-          <li key={bike._id} className="p-4 bg-primary-light rounded shadow">
-            <b>{bike.brand} {bike.model}</b> ({bike.type})
-            <br />
-            <a href={`/bikes/${bike._id}`} className="text-primary-dark underline text-sm">Detail kola</a>
-          </li>
-        ))}
-      </ul>
-      <Button variant="contained" color="success" className="mt-6" onClick={() => setShowForm(!showForm)}>
-        {showForm ? 'Zavřít formulář' : 'Přidat nové kolo'}
-      </Button>
-      {showForm && (
-        <form className="flex flex-col gap-2 mt-4 max-w-sm" onSubmit={handleFormSubmit}>
-          <input
-            className="p-2 rounded border"
-            type="text"
-            name="brand"
-            placeholder="Značka"
-            value={form.brand}
-            onChange={handleFormChange}
-          />
-          <input
-            className="p-2 rounded border"
-            type="text"
-            name="model"
-            placeholder="Model"
-            value={form.model}
-            onChange={handleFormChange}
-          />
-          <input
-            className="p-2 rounded border"
-            type="text"
-            name="type"
-            placeholder="Typ (např. silniční, horské)"
-            value={form.type}
-            onChange={handleFormChange}
-          />
-          <input
-            className="p-2 rounded border"
-            type="number"
-            name="age"
-            placeholder="Stáří (roky)"
-            value={form.age}
-            onChange={handleFormChange}
-          />
-          <Button type="submit" variant="contained" color="success" disabled={formLoading}>
-            {formLoading ? 'Přidávám...' : 'Přidat kolo'}
+      {error && (
+        <div className="text-red-500">
+          {error}
+          {error.includes('přihlaste') && (
+            <div className="mt-2">
+              <a href="/login" className="text-blue-600 underline">Přihlásit se</a> nebo <a href="/register" className="text-blue-600 underline">registrovat</a>
+            </div>
+          )}
+        </div>
+      )}
+      {!error && (
+        <>
+          <ul className="space-y-2">
+            {bikes.map(bike => (
+              <li key={bike._id} className="p-4 bg-primary-light rounded shadow">
+                <b>{bike.brand} {bike.model}</b> ({bike.type})
+                <br />
+                <a href={`/bikes/${bike._id}`} className="text-primary-dark underline text-sm">Detail kola</a>
+              </li>
+            ))}
+          </ul>
+          <Button variant="contained" color="success" className="mt-6" onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Zavřít formulář' : 'Přidat nové kolo'}
           </Button>
-          {formError && <div className="text-red-500 text-sm mt-2">{formError}</div>}
-        </form>
+          {showForm && (
+            <form className="flex flex-col gap-2 mt-4 max-w-sm" onSubmit={handleFormSubmit}>
+              <input
+                className="p-2 rounded border"
+                type="text"
+                name="brand"
+                placeholder="Značka"
+                value={form.brand}
+                onChange={handleFormChange}
+              />
+              <input
+                className="p-2 rounded border"
+                type="text"
+                name="model"
+                placeholder="Model"
+                value={form.model}
+                onChange={handleFormChange}
+              />
+              <input
+                className="p-2 rounded border"
+                type="text"
+                name="type"
+                placeholder="Typ (např. silniční, horské)"
+                value={form.type}
+                onChange={handleFormChange}
+              />
+              <input
+                className="p-2 rounded border"
+                type="number"
+                name="age"
+                placeholder="Stáří (roky)"
+                value={form.age}
+                onChange={handleFormChange}
+              />
+              <Button type="submit" variant="contained" color="success" disabled={formLoading}>
+                {formLoading ? 'Přidávám...' : 'Přidat kolo'}
+              </Button>
+              {formError && <div className="text-red-500 text-sm mt-2">{formError}</div>}
+            </form>
+          )}
+        </>
       )}
     </div>
   );

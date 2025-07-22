@@ -1,4 +1,6 @@
 import BiApiDocsPanel from '../components/BiApiDocsPanel';
+import NotificationWidget from '../components/NotificationWidget';
+import WidgetBox from '../components/WidgetBox';
 import WebhookManagerPanel from '../components/WebhookManagerPanel';
 import AdminUsersPanel from '../components/AdminUsersPanel';
 import SegmentTransitionHeatmap from '../components/SegmentTransitionHeatmap';
@@ -7,6 +9,7 @@ import FollowupEffectivenessPanel from '../components/FollowupEffectivenessPanel
 import FollowupHistoryExportPanel from '../components/FollowupHistoryExportPanel';
 import BiAlertsPanel from '../components/BiAlertsPanel';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AnalyticsFilters from '../components/AnalyticsFilters';
 import PaymentDemo from '../components/PaymentDemo';
@@ -21,6 +24,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('');
   const [userMetrics, setUserMetrics] = useState(null);
   const [exportStats, setExportStats] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -140,6 +144,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-8">
+      <button onClick={() => navigate(-1)} className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">← Zpět</button>
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard – Statistika</h1>
       {error && <div className="text-red-500 mb-2">{error}</div>}
       {!stats ? (
@@ -230,7 +235,7 @@ export default function AdminDashboard() {
                         <li>Kontaktujte technickou podporu, pokud problém přetrvává.</li>
                       </ul>
                       <a href="/api/export-failures-report" download className="inline-block mt-3 px-4 py-2 bg-red-600 text-white rounded font-semibold">Stáhnout auditní report selhání exportů</a>
-                      <AuditAiSummary />
+                      {/* AuditAiSummary bude vložen níže */}
                       {exportStats.escalation && exportStats.escalation.needed && (
                         <div className="mt-4 p-2 bg-orange-100 border border-orange-400 text-orange-900 rounded flex items-center">
                           <span className="mr-2">🔔</span>
@@ -239,6 +244,32 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   )}
+
+                  <ul className="list-disc ml-6 mb-4">
+
+                    <li><b>Celkem exportů:</b> {exportStats.total}</li>
+                    <li><b>Úspěšné exporty:</b> {exportStats.success}</li>
+                    <li><b>Selhání exportu:</b> {exportStats.fail}</li>
+                    <li><b>Poslední úspěch:</b> {exportStats.lastSuccess || '–'}</li>
+                    <li><b>Poslední chyba:</b> {exportStats.lastError || '–'}</li>
+                  </ul>
+                  <ExportStatsChart daily={exportStats.daily} />
+                </>
+              ) : <div>Načítám exportní statistiky...</div>}
+            </>
+          )}
+        </>
+      )}
+      {/* Notifikace pro admina/technika */}
+      <div className="mt-8">
+        <WidgetBox title="Notifikace">
+          <NotificationWidget />
+        </WidgetBox>
+      </div>
+    </div>
+  );
+}
+
 // Komponenta pro zobrazení AI shrnutí a doporučení z auditního reportu
 function AuditAiSummary() {
   const [summary, setSummary] = React.useState('');
@@ -257,23 +288,6 @@ function AuditAiSummary() {
     <div className="mt-4 p-3 bg-yellow-50 border border-yellow-400 text-yellow-900 rounded">
       <b>AI shrnutí a doporučení:</b>
       <pre className="whitespace-pre-wrap text-sm mt-2">{summary}</pre>
-    </div>
-  );
-}
-                  <ul className="list-disc ml-6 mb-4">
-                    <li><b>Celkem exportů:</b> {exportStats.total}</li>
-                    <li><b>Úspěšné exporty:</b> {exportStats.success}</li>
-                    <li><b>Selhání exportu:</b> {exportStats.fail}</li>
-                    <li><b>Poslední úspěch:</b> {exportStats.lastSuccess || '–'}</li>
-                    <li><b>Poslední chyba:</b> {exportStats.lastError || '–'}</li>
-                  </ul>
-                  <ExportStatsChart daily={exportStats.daily} />
-                </>
-              ) : <div>Načítám exportní statistiky...</div>}
-            </>
-          )}
-        </>
-      )}
     </div>
   );
 }

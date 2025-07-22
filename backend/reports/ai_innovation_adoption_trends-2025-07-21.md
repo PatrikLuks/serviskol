@@ -1,0 +1,1 @@
+Nepodařilo se vygenerovat AI Innovation Adoption Trends Report. Zkontrolujte konfiguraci OpenAI API a vstupní data.

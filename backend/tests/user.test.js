@@ -1,10 +1,18 @@
 
 const request = require('supertest');
-const app = require('../server');
+const createApp = require('../server');
+let app, server;
 const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const mongoose = require('mongoose');
-const User = require('../models/User');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const { getModel, registerModel } = require('../db');
+let conn, User;
+
+// Importujeme pouze schémata, ne modely!
+const { userSchema } = require('../models/User');
+const { ReportSettingSchema } = require('../models/ReportSetting');
+const { AuditLogSchema } = require('../models/AuditLog');
 
 // Mock alertAdmins (vedlejší efekt) pro všechny testy
 jest.mock('../utils/notificationUtils', () => ({
@@ -17,25 +25,43 @@ jest.mock('../middleware/auditLog', () => ({
   checkExportAlerts: jest.fn()
 }));
 
+jest.setTimeout(30000);
+
 describe('User API', () => {
-  beforeEach(async () => {
-    await User.deleteMany({});
+  let mongoServer;
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+    conn = await mongoose.createConnection(uri);
+    // Explicitní registrace modelů na testovací connection
+    registerModel('User', userSchema, conn);
+    registerModel('ReportSetting', ReportSettingSchema, conn);
+    registerModel('AuditLog', AuditLogSchema, conn);
+    User = getModel('User', conn);
+    app = createApp({ mongooseConnection: conn });
+    server = app.listen(0);
   });
+  afterAll(async () => {
+    await server.close();
+    if (conn) await conn.close();
+    if (mongoServer) await mongoServer.stop();
+  });
+  // Žádné globální mazání dat, pouze setup databáze
   it('should return 400 for missing registration fields', async () => {
-    const res = await request(app)
+    const res = await request(server)
       .post('/api/users/register')
       .send({ email: 'test@test.cz' });
     expect(res.statusCode).toBe(400);
   });
 
   it('should return 401 for unauthorized access to /api/users/me', async () => {
-    const res = await request(app)
+    const res = await request(server)
       .get('/api/users/me');
     expect([401, 403]).toContain(res.statusCode);
   });
 
   it('should register a new user successfully', async () => {
-    const res = await request(app)
+    const res = await request(server)
       .post('/api/users/register')
       .send({ name: 'Test User', email: 'testuser@example.com', password: 'Test1234', role: 'client' });
     expect([200, 201]).toContain(res.statusCode);
@@ -46,7 +72,7 @@ describe('User API', () => {
     await request(app)
       .post('/api/users/register')
       .send({ name: 'Test User', email: 'dupe@example.com', password: 'Test1234', role: 'client' });
-    const res = await request(app)
+    const res = await request(server)
       .post('/api/users/register')
       .send({ name: 'Test User', email: 'dupe@example.com', password: 'Test1234', role: 'client' });
     expect(res.statusCode).toBe(400);
@@ -55,17 +81,17 @@ describe('User API', () => {
 
   it('should login successfully and access /me with token', async () => {
     // Nejprve registrace
-    await request(app)
+    await request(server)
       .post('/api/users/register')
       .send({ name: 'Login User', email: 'loginuser@example.com', password: 'Test1234', role: 'client' });
     // Login
-    const loginRes = await request(app)
+    const loginRes = await request(server)
       .post('/api/users/login')
       .send({ email: 'loginuser@example.com', password: 'Test1234' });
     expect(loginRes.statusCode).toBe(200);
     expect(loginRes.body.token).toBeDefined();
     // Přístup na /me
-    const meRes = await request(app)
+    const meRes = await request(server)
       .get('/api/users/me')
       .set('Authorization', `Bearer ${loginRes.body.token}`);
     expect(meRes.statusCode).toBe(200);
@@ -84,11 +110,14 @@ describe('User API', () => {
   });
 
   describe('User role change', () => {
+    beforeEach(async () => {
+      await User.deleteMany({});
+    });
     const jwt = require('jsonwebtoken');
     let adminToken, userId;
     beforeEach(async () => {
       // Vyčistit kolekci uživatelů před testy role
-      await require('../models/User').deleteMany({});
+      await User.deleteMany({});
       // Registrace běžného uživatele
       const userRes = await request(app)
         .post('/api/users/register')
@@ -201,9 +230,12 @@ describe('User API', () => {
   });
 
   describe('2FA flow', () => {
+    beforeEach(async () => {
+      await User.deleteMany({});
+    });
     let token, secret, email = '2fauser@example.com', password = 'Test2fa123';
     beforeEach(async () => {
-      await require('../models/User').deleteMany({ email });
+      await User.deleteMany({ email });
       await request(app)
         .post('/api/users/register')
         .send({ name: '2FA User', email, password, role: 'client' });

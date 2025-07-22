@@ -22,9 +22,14 @@ if (process.env.NODE_ENV === 'test') {
       }
     })
   };
-} else {
+} else if (process.env.OPENAI_API_KEY) {
   const OpenAI = require('openai');
   openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+} else {
+  // fallback klient, který vždy vyhodí chybu
+  openai = {
+    createChatCompletion: async () => { throw new Error('AI není dostupné (chybí OPENAI_API_KEY)'); }
+  };
 }
 
 
@@ -39,6 +44,9 @@ router.post('/chat', auth, async (req, res) => {
   if (!message) return res.status(400).json({ error: 'Chybí dotaz.' });
   aiChatRequests.inc();
   const end = aiChatDuration.startTimer();
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(503).json({ error: 'AI není dostupné (chybí OPENAI_API_KEY).' });
+  }
   try {
     // Personalizace promptu
     // 1. Základní informace o uživateli

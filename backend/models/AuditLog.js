@@ -9,3 +9,4 @@ const AuditLogSchema = new mongoose.Schema({
 });
 
 module.exports = registerModel('AuditLog', AuditLogSchema);
+module.exports.AuditLogSchema = AuditLogSchema;

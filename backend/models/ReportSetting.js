@@ -26,3 +26,4 @@ ReportSettingSchema.pre('save', function(next) {
 });
 
 module.exports = registerModel('ReportSetting', ReportSettingSchema);
+module.exports.ReportSettingSchema = ReportSettingSchema;

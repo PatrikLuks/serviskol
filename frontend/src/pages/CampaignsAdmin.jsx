@@ -15,9 +15,11 @@ import QuickFilterBar from '../components/QuickFilterBar';
 import CTRTrendChart from '../components/CTRTrendChart';
 import SegmentHeatmap from '../components/SegmentHeatmap';
 import { exportDashboardReport } from '../utils/exportDashboardReport';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 const CampaignsAdmin = () => {
+  // Základní stav pro kampaně, aby nedocházelo k ReferenceError
+  const [campaigns, setCampaigns] = useState([]);
   // ...existing state and effect hooks...
   const [campaignQuery, setCampaignQuery] = useState('');
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);

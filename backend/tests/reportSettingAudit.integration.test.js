@@ -1,11 +1,11 @@
+jest.setTimeout(30000);
 const request = require('supertest');
-const { mongoose } = require('../db');
+const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const fs = require('fs');
 const path = require('path');
-const { createApp } = require('../server');
-const { getModel } = require('../db');
-let AuditLog, ReportSetting, User;
+// Importuj přímo instanci aplikace
+let AuditLog, ReportSetting, User, conn;
 
 const AUDIT_LOG_PATH = '/tmp/audit.log';
 
@@ -13,22 +13,88 @@ describe('Audit logování report settings', () => {
   let mongoServer;
   let server, token, userId, settingId, app;
 
-beforeAll(async () => {
+  beforeAll(async () => {
     console.log('DEBUG: Spouštím MongoMemoryServer.create()');
     jest.setTimeout(30000); // zvýšení timeoutu pro tento test
-    console.log('DEBUG: Spouštím MongoMemoryServer.create()');
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
-    console.log('DEBUG: Připojuji mongoose na', uri);
-    await mongoose.connect(uri);
-    console.log('DEBUG: mongoose připojeno');
-    // Načti všechny modely pro správnou registraci singletonů
-    require('../models');
-    AuditLog = getModel('AuditLog');
-    ReportSetting = getModel('ReportSetting');
-    User = getModel('User');
-    const { createApp } = require('../server');
-    app = createApp();
+    console.log('DEBUG: Připojuji vlastní mongoose connection na', uri);
+    conn = await mongoose.createConnection(uri);
+    console.log('DEBUG: vlastní mongoose connection připojena');
+
+    // --- Schémata přímo v testu ---
+    const AuditLogSchema = new mongoose.Schema({
+      action: { type: String, required: true },
+      performedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      targetUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      details: { type: Object },
+      createdAt: { type: Date, default: Date.now }
+    });
+    const ReportSettingSchema = new mongoose.Schema({
+      emails: [String],
+      frequency: { type: String, enum: ['weekly', 'monthly'], default: 'weekly' },
+      enabled: { type: Boolean, default: true },
+      enabledSections: {
+        type: [String],
+        default: ['aiSummary','ctrTrend','heatmap']
+      },
+      dateFrom: { type: Date },
+      dateTo: { type: Date },
+      scheduledSend: { type: Boolean, default: false },
+      lastSentAt: { type: Date },
+      createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date, default: Date.now }
+    });
+    ReportSettingSchema.pre('save', function(next) {
+      this.updatedAt = new Date();
+      next();
+    });
+    const UserSchema = new mongoose.Schema({
+      name: { type: String, required: true },
+      email: { type: String, required: true, unique: true },
+      passwordHash: { type: String, required: true },
+      role: { type: String, enum: ['client', 'mechanic', 'admin'], required: true },
+      adminRole: { type: String, enum: ['superadmin', 'approver', 'readonly'], default: 'approver' },
+      loyaltyLevel: { type: String, enum: ['Bronze', 'Silver', 'Gold', 'Platinum'], default: 'Bronze' },
+      bikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bike' }],
+      createdAt: { type: Date, default: Date.now },
+      region: { type: String },
+      age: { type: Number },
+      lastLogin: { type: Date },
+      engagementScore: { type: Number, default: 0 },
+      pushToken: { type: String },
+      notificationChannel: { type: String, enum: ['in-app', 'email', 'push'], default: 'in-app' },
+      twoFactorSecret: { type: String },
+      twoFactorEnabled: { type: Boolean, default: false },
+      campaignClicks: [{
+        campaign: { type: String },
+        variant: { type: String },
+        faq: { type: String },
+        clickedAt: { type: Date, default: Date.now },
+        channel: { type: String }
+      }],
+      preferredChannel: { type: String, enum: ['in-app', 'email', 'push', 'sms'], default: 'in-app' },
+      channelEngagement: {
+        inApp: { type: Number, default: 0 },
+        email: { type: Number, default: 0 },
+        push: { type: Number, default: 0 },
+        sms: { type: Number, default: 0 }
+      },
+      aiSegment: { type: String, default: 'ostatní' },
+      apiKey: { type: String, unique: true, sparse: true },
+      apiKeyPermissions: [{ type: String }]
+    });
+
+
+    // Registrace modelů na testovací connection pro DI do app
+    const { registerModel } = require('../db');
+    AuditLog = registerModel('AuditLog', AuditLogSchema, conn);
+    ReportSetting = registerModel('ReportSetting', ReportSettingSchema, conn);
+    User = registerModel('User', UserSchema, conn);
+
+    const createApp = require('../server');
+    app = createApp({ mongooseConnection: conn });
     server = app.listen(0);
     console.log('DEBUG: server spuštěn');
     // Vytvoření superadmin uživatele a JWT
@@ -46,7 +112,6 @@ beforeAll(async () => {
     if (fs.existsSync(AUDIT_LOG_PATH)) fs.unlinkSync(AUDIT_LOG_PATH);
     await AuditLog.deleteMany({ performedBy: user._id });
     await ReportSetting.deleteMany({ createdBy: user._id });
-    // Vyčistit audit logy
     if (fs.existsSync(AUDIT_LOG_PATH)) fs.unlinkSync(AUDIT_LOG_PATH);
     await AuditLog.deleteMany({ performedBy: user._id });
     await ReportSetting.deleteMany({ createdBy: user._id });
@@ -55,7 +120,7 @@ beforeAll(async () => {
 
   afterAll(async () => {
     await server.close();
-    await mongoose.disconnect();
+    if (conn) await conn.close();
     if (mongoServer) await mongoServer.stop();
   });
 

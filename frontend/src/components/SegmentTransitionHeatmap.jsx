@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { ResponsiveHeatMap } from '@nivo/heatmap';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const SEGMENTS = ['VIP', 'aktivní', 'riziko_odchodu', 'ostatní'];
 
 export default function SegmentTransitionHeatmap() {
+  const { user, token } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!user) return;
     setLoading(true);
-    axios.get('/api/bi/ai-segment-history')
+    axios.get('/api/bi/ai-segment-history', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .then(res => {
         // Sestavit matici přechodů segmentů
         const transitions = {};
@@ -28,7 +33,16 @@ export default function SegmentTransitionHeatmap() {
       })
       .catch(() => setError('Chyba při načítání historie'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user, token]);
+
+  if (!user) {
+    return (
+      <div className="mb-8">
+        <h3 className="font-bold mb-2">Heatmapa přechodů AI segmentů</h3>
+        <div className="text-red-600">Pro zobrazení heatmapy se prosím přihlaste.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-8">

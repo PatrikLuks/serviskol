@@ -27,9 +27,10 @@ async function loginUser({ email, password, ip }) {
     auditLog('Neúspěšné přihlášení', user, { ip });
     throw new Error('Nesprávný email nebo heslo.');
   }
-  if ((user.role === 'admin' || user.role === 'mechanic') && !user.twoFactorEnabled) {
-    throw new Error('Pro tuto roli je povinné dvoufázové ověření. Aktivujte si 2FA.');
-  }
+  // Dočasně povoleno přihlášení adminů a mechaniků i bez 2FA (pro vývoj)
+  // if ((user.role === 'admin' || user.role === 'mechanic') && !user.twoFactorEnabled) {
+  //   throw new Error('Pro tuto roli je povinné dvoufázové ověření. Aktivujte si 2FA.');
+  // }
   if (user.twoFactorEnabled) {
     return { twoFactorRequired: true, userId: user._id };
   }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { registerPushToken } from '../utils/push';
+import { useNavigate } from 'react-router-dom';
 import StravaConnect from '../components/StravaConnect';
 
 const ProfileSettings = () => {
@@ -9,6 +10,7 @@ const ProfileSettings = () => {
   const [status, setStatus] = useState('');
   const [twoFA, setTwoFA] = useState({ enabled: user?.twoFactorEnabled || false, qr: '', secret: '', step: 'idle', code: '', error: '', success: '' });
   const [analyticsOptOut, setAnalyticsOptOut] = useState(localStorage.getItem('analyticsOptOut') === 'true');
+  const navigate = useNavigate();
 
   useEffect(() => {
     setChannel(user?.notificationChannel || 'in-app');
@@ -123,6 +125,7 @@ const ProfileSettings = () => {
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white rounded shadow mt-8">
+      <button onClick={() => navigate(-1)} className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">← Zpět</button>
       <h2 className="text-lg font-bold mb-2">Nastavení notifikací</h2>
       <label className="block mb-2">Preferovaný kanál:</label>
       <select value={channel} onChange={handleChannelChange} className="border rounded p-2 mb-2">

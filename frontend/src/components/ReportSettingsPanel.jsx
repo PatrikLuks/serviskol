@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
-export default function ReportSettingsPanel() {
+function ReportSettingsPanel() {
+  const { user, token } = useAuth();
   const [settings, setSettings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
@@ -24,13 +26,16 @@ export default function ReportSettingsPanel() {
   ];
 
   useEffect(() => {
+    if (!user) return;
     fetchSettings();
-  }, []);
+  }, [user, token]);
 
   async function fetchSettings() {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/report-settings');
+      const res = await axios.get('/api/admin/report-settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       setSettings(res.data);
     } catch (e) {
       setError('Chyba načítání nastavení');
@@ -62,9 +67,13 @@ export default function ReportSettingsPanel() {
       scheduledSend: form.scheduledSend
     };
     if (edit) {
-      await axios.patch(`/api/admin/report-settings/${edit}`, payload);
+      await axios.patch(`/api/admin/report-settings/${edit}`, payload, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
     } else {
-      await axios.post('/api/admin/report-settings', payload);
+      await axios.post('/api/admin/report-settings', payload, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
     }
     setEdit(null);
     setForm({ emails: '', frequency: 'weekly', enabled: true, enabledSections: ['aiSummary','ctrTrend','heatmap'], dateFrom: '', dateTo: '', scheduledSend: false });
@@ -72,8 +81,19 @@ export default function ReportSettingsPanel() {
   }
 
   async function handleDelete(id) {
-    await axios.delete(`/api/admin/report-settings/${id}`);
+    await axios.delete(`/api/admin/report-settings/${id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     fetchSettings();
+  }
+
+  if (!user) {
+    return (
+      <div className="border rounded p-4 mb-6 bg-gray-50">
+        <h3 className="font-bold mb-2">Nastavení reportů</h3>
+        <div className="text-red-600">Pro zobrazení nastavení reportů se prosím přihlaste.</div>
+      </div>
+    );
   }
 
   return (
@@ -183,3 +203,5 @@ export default function ReportSettingsPanel() {
     </div>
   );
 }
+
+export default ReportSettingsPanel;

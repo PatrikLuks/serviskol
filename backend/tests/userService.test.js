@@ -1,6 +1,5 @@
-const userService = require('../services/userService');
-const User = require('../models/User');
 
+// Zajisti registraci všech modelů před importem userService
 jest.mock('../models/User', () => {
   function User(data) {
     Object.assign(this, data);
@@ -13,6 +12,36 @@ jest.mock('../models/User', () => {
   User.prototype.save = jest.fn();
   return User;
 });
+
+// Zajisti registraci všech modelů před importem userService
+require('../models');
+const db = require('../db');
+jest.mock('../models/User', () => {
+  function MockUser(data) {
+    Object.assign(this, data);
+    this._id = {
+      toString: () => 'mocked-user-id'
+    };
+  }
+  MockUser.findOne = jest.fn();
+  MockUser.findById = jest.fn();
+  MockUser.prototype.save = jest.fn();
+  return MockUser;
+});
+const User = require('../models/User');
+// Explicitně zaregistruj mock do singletonu models v db.js
+const modelsSingleton = require.cache[require.resolve('../db')].exports;
+if (modelsSingleton && modelsSingleton.getModel && modelsSingleton.registerModel) {
+  // Pokud je k dispozici registerModel, zaregistruj mock
+  modelsSingleton.registerModel('User', User.schema || {});
+  // Přepiš getModel, aby vracel mock
+  const origGetModel = modelsSingleton.getModel;
+  modelsSingleton.getModel = (name) => {
+    if (name === 'User') return User;
+    return origGetModel(name);
+  };
+}
+const userService = require('../services/userService');
 jest.mock('bcryptjs', () => ({ compare: jest.fn() }));
 jest.mock('jsonwebtoken', () => ({ sign: jest.fn(() => 'mocked-jwt-token') }));
 jest.mock('../middleware/auditLog', () => ({ auditLog: jest.fn() }));

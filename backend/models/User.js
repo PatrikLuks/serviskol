@@ -102,3 +102,4 @@ userSchema.pre('save', async function (next) {
 });
 
 module.exports = registerModel('User', userSchema);
+module.exports.userSchema = userSchema;

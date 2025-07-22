@@ -1,5 +1,33 @@
+import AIChat from './components/AIChat';
+import GdprRequests from './pages/GdprRequests';
+import AuditLog from './pages/AuditLog';
+import ProfileSettings from './pages/ProfileSettings';
+import NotificationWidget from './components/NotificationWidget';
+import FeedbackForm from './components/FeedbackForm';
+import CampaignsReport from './pages/CampaignsReport';
+import CampaignsAdmin from './pages/CampaignsAdmin';
+import AdminDashboard from './pages/AdminDashboard';
+import Help from './pages/Help';
+import Onboarding from './pages/Onboarding';
+import Register from './pages/Register';
+import Login from './pages/Login';
+import BikeDetail from './pages/BikeDetail';
+import Bikes from './pages/Bikes';
+import Home from './pages/Home';
+import Landing from './pages/Landing';
+import Profile from './pages/Profile';
 
+
+import React, { useState } from 'react';
+import PrivateRoute from './components/PrivateRoute';
+import AdminRoute from './components/AdminRoute';
 import posthog from 'posthog-js';
+import ReactGA from 'react-ga4';
+import { BrowserRouter as Router, Link, Routes, Route, useNavigate } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import { useAuth } from './context/AuthContext';
+import viteLogo from '/vite.svg';
+import reactLogo from './assets/react.svg';
 
 ReactGA.initialize('G-XXXXXXXXXX'); // TODO: nahraďte vlastním GA4 měřicím ID
 
@@ -11,15 +39,26 @@ function Navbar() {
     navigate('/login');
   };
   return (
-    <nav className="flex gap-4 p-4 bg-primary-dark text-white items-center">
-      <Link to="/" className="hover:underline">Domů</Link>
-      {user && <Link to="/bikes" className="hover:underline">Moje kola</Link>}
-      {user && <Link to="/admin/campaigns" className="hover:underline">Kampaně</Link>}
-      {user && <Link to="/admin/campaigns-report" className="hover:underline">Přehled kampaní</Link>}
-      {!user && <Link to="/login" className="hover:underline">Přihlášení</Link>}
-      {!user && <Link to="/register" className="hover:underline">Registrace</Link>}
-      {user && <span className="ml-4">Přihlášen: <b>{user.name}</b></span>}
-      {user && <Button variant="outlined" color="inherit" size="small" onClick={handleLogout} className="ml-2">Odhlásit</Button>}
+    <nav className="flex flex-wrap gap-4 p-4 bg-primary-dark text-white items-center justify-between">
+      <div className="flex gap-4 items-center">
+        <Link to="/" className="hover:underline font-bold">Domů</Link>
+        {user && <Link to="/bikes" className="hover:underline">Moje kola</Link>}
+        {user && <Link to="/profile" className="hover:underline">Profil</Link>}
+        {user && <Link to="/ai-chat" className="hover:underline">AI chat</Link>}
+        {user && (user.role === 'admin' || user.role === 'mechanic') && <>
+          <Link to="/admin" className="hover:underline">Admin dashboard</Link>
+          <Link to="/admin/campaigns" className="hover:underline">Kampaně</Link>
+          <Link to="/admin/campaigns-report" className="hover:underline">Přehled kampaní</Link>
+          <Link to="/admin/audit-log" className="hover:underline">Audit log</Link>
+          <Link to="/admin/gdpr-requests" className="hover:underline">GDPR</Link>
+        </>}
+        {!user && <Link to="/login" className="hover:underline">Přihlášení</Link>}
+        {!user && <Link to="/register" className="hover:underline">Registrace</Link>}
+      </div>
+      <div className="flex items-center gap-2">
+        {user && <span className="ml-2">Přihlášen: <b>{user.name}</b></span>}
+        {user && <Button variant="outlined" color="inherit" size="small" onClick={handleLogout} className="ml-2">Odhlásit</Button>}
+      </div>
     </nav>
   );
 }
@@ -45,68 +84,47 @@ function App() {
 
   return (
     <Router>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1 className="text-4xl font-bold mb-6">Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-primary text-white">
-        <p className="mb-4">Toto je ukázka zeleného layoutu s TailwindCSS a MUI.</p>
-        <Button variant="contained" color="success">
-          MUI tlačítko
-        </Button>
-        <div className="mt-8 p-4 bg-primary-light rounded shadow">
-          <span className="text-primary-dark font-semibold">Tailwind zelená komponenta</span>
-        </div>
-      </div>
       <Navbar />
       <Routes>
-        <Route path="/" element={
-          <PrivateRoute>
-            <Home />
-          </PrivateRoute>
-        } />
-        <Route path="/bikes" element={
-          <PrivateRoute>
-            <Bikes />
-          </PrivateRoute>
-        } />
-        <Route path="/bikes/:id" element={
-          <PrivateRoute>
-            <BikeDetail />
-          </PrivateRoute>
-        } />
+        {/* Veřejné stránky */}
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/help" element={<Help />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/campaigns" element={<CampaignsAdmin />} />
-        <Route path="/admin/campaigns-report" element={<CampaignsReport />} />
-        <Route path="/feedback" element={<FeedbackForm />} />
-        <Route path="/notifications" element={<NotificationWidget />} />
-        <Route path="/profile/settings" element={<ProfileSettings />} />
-        <Route path="/admin/audit-log" element={<AuditLog />} />
-        <Route path="/admin/gdpr-requests" element={<GdprRequests />} />
+
+        {/* Uživatelské stránky (pouze pro přihlášené) */}
+        <Route path="/bikes" element={
+          <PrivateRoute><Bikes /></PrivateRoute>
+        } />
+        <Route path="/bikes/:id" element={
+          <PrivateRoute><BikeDetail /></PrivateRoute>
+        } />
+        <Route path="/profile" element={
+          <PrivateRoute><Profile /></PrivateRoute>
+        } />
+        <Route path="/profile/settings" element={
+          <PrivateRoute><ProfileSettings /></PrivateRoute>
+        } />
         <Route path="/ai-chat" element={
-          <PrivateRoute>
-            <AIChat />
-          </PrivateRoute>
+          <PrivateRoute><AIChat /></PrivateRoute>
+        } />
+
+        {/* Admin/technik stránky */}
+        <Route path="/admin" element={
+          <AdminRoute><AdminDashboard /></AdminRoute>
+        } />
+        <Route path="/admin/campaigns" element={
+          <AdminRoute><CampaignsAdmin /></AdminRoute>
+        } />
+        <Route path="/admin/campaigns-report" element={
+          <AdminRoute><CampaignsReport /></AdminRoute>
+        } />
+        <Route path="/admin/audit-log" element={
+          <AdminRoute><AuditLog /></AdminRoute>
+        } />
+        <Route path="/admin/gdpr-requests" element={
+          <AdminRoute><GdprRequests /></AdminRoute>
         } />
       </Routes>
     </Router>

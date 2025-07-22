@@ -1,23 +1,4 @@
-// Endpoint pro exportní statistiky
-  app.get('/api/export-stats', (req, res) => {
-    const statsPath = path.join(__dirname, 'reports/export-stats.json');
-    if (fs.existsSync(statsPath)) {
-      const stats = fs.readFileSync(statsPath, 'utf-8');
-      res.type('application/json').send(stats);
-    } else {
-      res.status(404).json({ error: 'Statistiky nenalezeny.' });
-    }
-  });
-
-  // Endpoint pro stažení auditního reportu selhání exportů
-  app.get('/api/export-failures-report', (req, res) => {
-    const reportPath = path.join(__dirname, 'reports/export-failures-report.txt');
-    if (fs.existsSync(reportPath)) {
-      res.download(reportPath, 'export-failures-report.txt');
-    } else {
-      res.status(404).json({ error: 'Auditní report nenalezen.' });
-    }
-  });
+// ...kód odstraněn, vše je registrováno přes router v createApp...
 
 // Načti .env konfiguraci hned na začátku
 require('dotenv').config({ path: __dirname + '/.env' });
@@ -32,7 +13,8 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 
-function createApp() {
+
+function createApp({ mongooseConnection } = {}) {
   const express = require('express');
   const helmet = require('helmet');
   const cors = require('cors');
@@ -43,6 +25,7 @@ function createApp() {
   const collectDefaultMetrics = promClient.collectDefaultMetrics;
 
   // Import všech modelů přes index.js pro správnou registraci singletonů
+  // Pokud je custom connection, předat ji do modelů (případně do routerů)
   require('./models');
 
   const app = express();
@@ -61,10 +44,6 @@ function createApp() {
     app.use(Sentry.Handlers.requestHandler());
   }
 
-  // ROUTES REGISTRATION (až po inicializaci app)
-  app.use('/api/admin', require('./routes/logUnauthorizedRoutes'));
-  app.use('/api/admin', require('./routes/aiSecurityAnalysisRoutes'));
-
   // Middleware
   app.use(helmet());
   app.use(cors());
@@ -78,6 +57,13 @@ function createApp() {
   });
 
   // ROUTES REGISTRATION (až po inicializaci app)
+  // Pokud je custom mongooseConnection, předat ji do routerů, které potřebují modely
+  const reportSettingRoutes = require('./routes/reportSettingRoutes');
+  app.use('/api/admin/report-settings', reportSettingRoutes({ mongooseConnection }));
+
+  // Ostatní routes beze změny
+  app.use('/api/admin', require('./routes/logUnauthorizedRoutes'));
+  app.use('/api/admin', require('./routes/aiSecurityAnalysisRoutes'));
   app.use('/api/bi/alerts', require('./routes/biAlertsRoutes'));
   app.use('/api/bi/alerts', require('./routes/biAlertsAiSuggestRoutes'));
   app.use('/api/bi/alerts', require('./routes/biAlertsActivateVariantRoutes'));
@@ -92,13 +78,13 @@ function createApp() {
   app.use('/api/admin/webhooks', require('./routes/webhookRoutes'));
   app.use('/api/admin/api-keys', require('./routes/apiKeyRoutes'));
   app.use('/api/bi', require('./routes/biRoutes'));
-  app.use('/api/admin/report-settings', require('./routes/reportSettingRoutes'));
   app.use('/api/click', require('./routes/clickRoutes'));
   app.use('/api/admin', require('./routes/adminRoutes'));
   app.use('/api/admin', require('./routes/securityAuditRoutes'));
   app.use('/api/admin', require('./routes/followupMetrics'));
-
-  // Další routes ...
+  app.use('/api/2fa', require('./routes/twofaRoutes'));
+  app.use('/api/gamification', require('./routes/gamificationRoutes'));
+  app.use('/api/ai', require('./routes/aiRoutes'));
   app.use('/api/users', require('./routes/userRoutes'));
   app.use('/api/bikes', require('./routes/bikeRoutes'));
   app.use('/api/intake', require('./routes/intakeRoutes'));
@@ -111,15 +97,12 @@ function createApp() {
   app.use('/api/integrations', require('./routes/stravaRoutes'));
   app.use('/api/payments', require('./routes/paymentRoutes'));
 
-  // app.use(Sentry.Handlers.errorHandler());
   if (process.env.SENTRY_DSN) {
     app.use(Sentry.Handlers.errorHandler());
   }
 
   const errorHandler = require('./middleware/errorHandler');
   app.use(errorHandler);
-
-
 
   app.get('/metrics', async (req, res) => {
     res.set('Content-Type', promClient.register.contentType);
@@ -129,6 +112,7 @@ function createApp() {
   return app;
 }
 
+
 const PORT = process.env.PORT || 5000;
 if (require.main === module) {
   const connectDB = require('./config/db');
@@ -136,6 +120,7 @@ if (require.main === module) {
     const app = createApp();
     app.listen(PORT, () => console.log(`Server běží na portu ${PORT}`));
   });
+} else {
+  // Pokud je importováno (např. v testech), exportuj factory
+  module.exports = createApp;
 }
-
-module.exports = { createApp };

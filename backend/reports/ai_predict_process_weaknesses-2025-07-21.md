@@ -1,0 +1,1 @@
+Nepodařilo se vygenerovat AI Process Weakness Prediction Report. Zkontrolujte konfiguraci OpenAI API a vstupní data.

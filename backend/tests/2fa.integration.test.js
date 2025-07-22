@@ -6,13 +6,15 @@ const jwt = require('jsonwebtoken');
 describe('2FA Integration', () => {
   let userToken;
   beforeAll(async () => {
+    const bcrypt = require('bcryptjs');
     const User = require('../models/User');
     let user = await User.findOne({ email: 'client@serviskol.cz' });
     if (!user) {
+      const passwordHash = await bcrypt.hash('heslo123', 8);
       user = new User({
         name: 'Testovací Klient',
         email: 'client@serviskol.cz',
-        passwordHash: 'heslo123',
+        passwordHash,
         role: 'client',
         twoFactorEnabled: true
       });

@@ -5,12 +5,15 @@ import App from './App.jsx';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import * as Sentry from '@sentry/react';
-import posthog from 'posthog-js';
 
-posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
-  api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com',
-  capture_pageview: true,
-});
+import posthog from 'posthog-js';
+const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
+if (posthogKey && posthogKey !== 'your_posthog_project_api_key') {
+  posthog.init(posthogKey, {
+    api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com',
+    capture_pageview: true,
+  });
+}
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,

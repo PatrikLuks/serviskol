@@ -92,7 +92,6 @@ describe('adminRole middleware', () => {
 
 
 describe('auth middleware', () => {
-  let app;
   const secret = 'tajnyklic';
   const userToken = jwt.sign({ id: '1', role: 'client' }, secret);
   const adminToken = jwt.sign({ id: '2', role: 'admin' }, secret);
@@ -100,6 +99,7 @@ describe('auth middleware', () => {
 
   beforeEach(() => {
     app = express();
+    app.use(express.json());
     app.get('/user', auth, (req, res) => res.json({ user: req.user }));
     app.get('/admin', auth, adminOnly, (req, res) => res.json({ admin: true }));
     app.get('/super', auth, adminRole('superadmin'), (req, res) => res.json({ super: true }));
