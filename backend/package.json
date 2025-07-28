@@ -22,7 +22,7 @@
     "supertest": "^6.0.0"
   },
   "dependencies": {
-    "@sentry/node": "^9.36.0",
+    "@sentry/node": "^9.42.0",
     "@swc/helpers": "^0.5.17",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.10.0",
